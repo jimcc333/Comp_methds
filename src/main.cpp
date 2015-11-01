@@ -35,13 +35,26 @@ int main(int argc, char* argv[]) {
                 params.input_path = string(argv[++arg]);
             }
 
+            if(string(argv[arg]) == "f") {
+                params.f_order = stoi(argv[++arg]);
+            }
+
+            if(string(argv[arg]) == "s") {
+                params.s_order = stoi(argv[++arg]);
+            }
+
         }
         cout << "Data for case: " << endl;
         params.Print();
     }
 
-    // Read in all isotope data
-    params.ReadIso();
+    // Read input data
+    params.ReadIP();
+
+    // Initiate isotope data object
+    IsoInfo isos(params.egroups, params.f_order, params.s_order);
+
+    isos.Print();
 
     return 0;
 }

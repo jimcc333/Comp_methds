@@ -10,6 +10,36 @@ void RegionInfo::Print() {
     }
 }
 
+IsoInfo::IsoInfo(unsigned int egroups, unsigned int f_order, unsigned int s_order) {
+    total.resize(egroups,1);
+    total.setZero();
+
+    ffactor.resize(egroups, f_order);
+    ffactor.setZero();
+
+    chi.resize(egroups,1);
+    chi.setZero();
+
+    nufission.resize(egroups,1);
+    nufission.setZero();
+
+    Eigen::MatrixXf temp_matrix;
+    temp_matrix.resize(egroups, egroups);
+    temp_matrix.setZero();
+    for(unsigned int i = 0; i < s_order; i++) {
+        skernel.push_back(temp_matrix);
+    }
+
+}
+
+
+void IsoInfo::Print() {
+    cout << "Total:" << endl << total << endl;
+    cout << "F factor:" << endl << ffactor << endl;
+    cout << "Chi:" << endl << chi << endl;
+    cout << "NuFission:" << endl << nufission << endl;
+    cout << "Skernel[0]:" << endl << skernel[0] << endl;
+}
 
 // Prints what it's holding to terminal
 void ParamsHolder::Print() {
@@ -19,7 +49,7 @@ void ParamsHolder::Print() {
 }
 
 // Reads isotope databases
-void ParamsHolder::ReadIso() {
+void ParamsHolder::ReadIP() {
     ifstream input(input_path);
     if(!input.is_open()) {cout << "Couldn't open input file!" << endl; return;}
 
