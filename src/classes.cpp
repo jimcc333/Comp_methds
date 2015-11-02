@@ -2,16 +2,11 @@
 
 #include "classes.h"
 
-void RegionInfo::Print() {
-    cout << "Region thickness: " << thickness << ". Isos and number densities:" << endl;
-
-    for(map<string, float>::const_iterator it = NumDens.begin(); it != NumDens.end(); ++it) {
-        cout << it->first << " " << it->second << endl;
-    }
-}
-
 IsoInfo::IsoInfo(unsigned int egroups, unsigned int f_order, unsigned int s_order, string iso_name) {
     name = iso_name;
+    this->egroups = egroups;
+    this->f_order = f_order;
+    this->s_order = s_order;
 
     total.resize(egroups,1);
     total.setZero();
@@ -34,26 +29,126 @@ IsoInfo::IsoInfo(unsigned int egroups, unsigned int f_order, unsigned int s_orde
 
 }
 
+void IsoInfo::Read(string data_path) {
+    // Open isotope file
+    ifstream input(data_path + name);
+    if(!input.is_open()) {
+        cout << endl << "(IsoInfo)Couldn't open input file " << data_path + name << endl;
+        return;
+    }
+
+    string line;
+    int group, togroup;
+    float value;
+    float value1, value2, value3, value4, value5, value6, value7, value8, value9;
+
+    cout << "Begin reading isotope file" << endl;
+    while(getline(input, line)) {
+
+        if(!line.compare("TOTAL")) {
+            while(getline(input, line), !line.empty()) {
+
+                istringstream iss(line);
+                iss >> group >> value;
+
+                total(egroups - group) = value;
+            }
+        }
+
+        if(!line.compare("FFACTOR")) {
+            while(getline(input, line), !line.empty()) {
+
+                istringstream iss(line);
+                iss >> group >> value1 >> value2 >> value3 >> value4 >> value5 >> value6;
+
+                ///TODO not order 6 support
+                ffactor(egroups - group, 0) = value1;
+                ffactor(egroups - group, 1) = value2;
+                ffactor(egroups - group, 2) = value3;
+                ffactor(egroups - group, 3) = value4;
+                ffactor(egroups - group, 4) = value5;
+                ffactor(egroups - group, 5) = value6;
+            }
+        }
+
+        if(!line.compare("CHI")) {
+            while(getline(input, line), !line.empty()) {
+
+                istringstream iss(line);
+                iss >> group >> value;
+
+                chi(egroups - group) = value;
+            }
+        }
+
+        if(!line.compare("NUFISSION")) {
+            while(getline(input, line), !line.empty()) {
+
+                istringstream iss(line);
+                iss >> group >> value;
+
+                nufission(egroups - group) = value;
+            }
+        }
+
+        if(!line.compare("SKERNEL")) {
+                cout << "skernel reached" <<endl;
+            while(getline(input, line)) {
+
+                istringstream iss(line);
+                iss >> group >> togroup >> value1 >> value2 >> value3
+                    >> value4 >> value5 >> value6 >> value7 >> value8 >> value9;
+
+                ///TODO not order 8 support
+                skernel[0](egroups - group, egroups - togroup) = value1;
+                skernel[1](egroups - group, egroups - togroup) = value2;
+                skernel[2](egroups - group, egroups - togroup) = value3;
+                skernel[3](egroups - group, egroups - togroup) = value4;
+                skernel[4](egroups - group, egroups - togroup) = value5;
+                skernel[5](egroups - group, egroups - togroup) = value6;
+                skernel[6](egroups - group, egroups - togroup) = value7;
+                skernel[7](egroups - group, egroups - togroup) = value8;
+                skernel[8](egroups - group, egroups - togroup) = value9;
+
+            }
+        }
+
+    }
+}
 
 void IsoInfo::Print() {
-    cout << "Total:" << endl << total << endl;
-    cout << "F factor:" << endl << ffactor << endl;
-    cout << "Chi:" << endl << chi << endl;
-    cout << "NuFission:" << endl << nufission << endl;
+    cout << "Total:" << endl << total << endl << endl;
+    cout << "F factor:" << endl << ffactor << endl << endl;
+    cout << "Chi:" << endl << chi << endl << endl;
+    cout << "NuFission:" << endl << nufission << endl << endl;
     cout << "Skernel[0]:" << endl << skernel[0] << endl;
+}
+
+void RegionInfo::Print() {
+    cout << "  Region thickness: " << thickness << ". Isos and number densities:" << endl;
+
+    for(map<string, float>::const_iterator it = NumDens.begin(); it != NumDens.end(); ++it) {
+        cout << "  " << it->first << " " << it->second << endl;
+    }
 }
 
 // Prints what it's holding to terminal
 void ParamsHolder::Print() {
     cout << " Database folder: " << data_path << endl
          << " Input file:      " << input_path << endl
-         << " Energy groups:   " << egroups << endl;
+         << " Energy groups:   " << egroups << endl
+         << " F order:         " << f_order << endl
+         << " S order:         " << s_order << endl;
 }
 
-// Reads isotope databases
+// Reads input file
 void ParamsHolder::ReadIP() {
+    // Open file
     ifstream input(input_path);
-    if(!input.is_open()) {cout << "Couldn't open input file!" << endl; return;}
+    if(!input.is_open()) {
+        cout << endl << "(ParamsHolder)Couldn't open input file " << input_path << endl;
+        return;
+    }
 
     string line;
     string name;
@@ -105,3 +200,9 @@ void ParamsHolder::ReadIP() {
         region[i].Print();
     }
 }
+
+
+
+
+
+

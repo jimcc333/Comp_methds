@@ -1,9 +1,5 @@
 Manifest
-h1
-o16
-zr90
-u235
-u238
+u235.xs
 
 Region
 h1 3.9760e22

@@ -11,6 +11,9 @@ public:
     IsoInfo(unsigned int egroups, unsigned int f_order, unsigned int s_order, string iso_name);
 
     string name;
+    unsigned int egroups;
+    unsigned int f_order;
+    unsigned int s_order;
 
     Eigen::VectorXf total;
     Eigen::MatrixXf ffactor; // ffactor[order][energy]
@@ -19,13 +22,13 @@ public:
     vector< Eigen::MatrixXf > skernel; // skernel[from][to]
 
     void Print();
+    void Read(string data_path);
 };
 
 class RegionInfo {
 public:
     float thickness;
     map<string,float> NumDens;
-    //IsoInfo smear_iso;
 
     void Print();
 };
