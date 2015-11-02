@@ -10,7 +10,9 @@ void RegionInfo::Print() {
     }
 }
 
-IsoInfo::IsoInfo(unsigned int egroups, unsigned int f_order, unsigned int s_order) {
+IsoInfo::IsoInfo(unsigned int egroups, unsigned int f_order, unsigned int s_order, string iso_name) {
+    name = iso_name;
+
     total.resize(egroups,1);
     total.setZero();
 
@@ -56,10 +58,27 @@ void ParamsHolder::ReadIP() {
     string line;
     string name;
     float value;
+    unsigned int counter = 0;
 
     while(getline(input, line)) {
-        if(!line.compare("Input begin")) {
-                cout << "Reading region 1" << endl;
+        if(!line.compare("Manifest")) {
+            cout << "..Reading manifest" << endl;
+                while(getline(input, line), !line.empty()) {
+                    // Read a list of all the isos in problem
+
+                    istringstream iss(line);
+                    iss >> name;
+
+                    manifest.push_back(name);
+
+                }
+        }
+
+        if(!line.compare("Region")) {
+                counter++;
+                cout << "..Reading region " << counter << endl;
+
+                RegionInfo temp_region;
 
                 while(getline(input, line), line[0] != 'X') {
                     // Read each line until the thickness (X)
@@ -67,7 +86,7 @@ void ParamsHolder::ReadIP() {
                     istringstream iss(line);
                     iss >> name >> value;
 
-                    region.NumDens[name] = value;
+                    temp_region.NumDens[name] = value;
 
                 }
 
@@ -75,10 +94,14 @@ void ParamsHolder::ReadIP() {
                 istringstream iss(line);
                 iss >> name >> value;
 
-                region.thickness = value;
+                temp_region.thickness = value;
+
+                region.push_back(temp_region);
         }
-        ///TODO add next region parsing method
 
     }
-    region.Print();
+    for(int i = 0; i < region.size(); i++) {
+        cout << "Region " << i+1 << " ";
+        region[i].Print();
+    }
 }

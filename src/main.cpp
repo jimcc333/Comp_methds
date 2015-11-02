@@ -52,9 +52,30 @@ int main(int argc, char* argv[]) {
     params.ReadIP();
 
     // Initiate isotope data object
-    IsoInfo isos(params.egroups, params.f_order, params.s_order);
+    for(unsigned int i = 0; i < params.manifest.size(); i++) {
 
-    isos.Print();
+    }
+    IsoInfo isos(params.egroups, params.f_order, params.s_order, "bla");
+
+
+    //isos.Print();
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,29 +1,31 @@
 #include <iostream>
-#include<map>
+#include <map>
 
 #include <eigen3/Eigen/Core>
 #include <vector>
 
 using namespace std;
 
-class RegionInfo {
-public:
-    float thickness;
-    map<string,float> NumDens;
-
-    void Print();
-};
-
 class IsoInfo {
 public:
-    IsoInfo(unsigned int egroups, unsigned int f_order, unsigned int s_order);
+    IsoInfo(unsigned int egroups, unsigned int f_order, unsigned int s_order, string iso_name);
 
+    string name;
 
     Eigen::VectorXf total;
     Eigen::MatrixXf ffactor; // ffactor[order][energy]
     Eigen::VectorXf chi;
     Eigen::VectorXf nufission;
     vector< Eigen::MatrixXf > skernel; // skernel[from][to]
+
+    void Print();
+};
+
+class RegionInfo {
+public:
+    float thickness;
+    map<string,float> NumDens;
+    //IsoInfo smear_iso;
 
     void Print();
 };
@@ -38,13 +40,17 @@ public:
     string input_path = "./Input/input.txt";
 
     // Problem objects
-    RegionInfo region;
+    vector<RegionInfo> region;
 
-    // Isotope libraries
-
+    // Isotope names
+    vector<string> manifest;
 
     void Print();
     void ReadIP();
 };
+
+
+
+
 
 
