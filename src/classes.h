@@ -28,6 +28,7 @@ public:
 class RegionInfo {
 public:
     float thickness;
+    float dx;
     map<string,float> NumDens;
 
     void Print();

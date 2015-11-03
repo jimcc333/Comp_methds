@@ -34,7 +34,7 @@ void IsoInfo::Read(string data_path) {
     ifstream input(data_path + name);
     if(!input.is_open()) {
         cout << endl << "(IsoInfo)Couldn't open input file " << data_path + name << endl;
-        return;
+        exit(1);
     }
 
     string line;
@@ -42,7 +42,6 @@ void IsoInfo::Read(string data_path) {
     float value;
     float value1, value2, value3, value4, value5, value6, value7, value8, value9;
 
-    cout << "Begin reading isotope file" << endl;
     while(getline(input, line)) {
 
         if(!line.compare("TOTAL")) {
@@ -54,6 +53,7 @@ void IsoInfo::Read(string data_path) {
                 total(egroups - group) = value;
             }
         }
+
 
         if(!line.compare("FFACTOR")) {
             while(getline(input, line), !line.empty()) {
@@ -92,7 +92,6 @@ void IsoInfo::Read(string data_path) {
         }
 
         if(!line.compare("SKERNEL")) {
-                cout << "skernel reached" <<endl;
             while(getline(input, line)) {
 
                 istringstream iss(line);
@@ -147,7 +146,7 @@ void ParamsHolder::ReadIP() {
     ifstream input(input_path);
     if(!input.is_open()) {
         cout << endl << "(ParamsHolder)Couldn't open input file " << input_path << endl;
-        return;
+        exit(1);
     }
 
     string line;
@@ -191,14 +190,27 @@ void ParamsHolder::ReadIP() {
 
                 temp_region.thickness = value;
 
+                // Store delta
+                getline(input, line);
+                istringstream iss2(line);
+                iss2 >> name >> value;
+
+                if(name.compare("dx")) {
+                    cout << " Error parsing region " << counter << " thickness." << endl;
+                    exit(1);
+                } else {
+                    temp_region.dx = value;
+                }
+
                 region.push_back(temp_region);
         }
 
     }
+    /*
     for(int i = 0; i < region.size(); i++) {
         cout << "Region " << i+1 << " ";
         region[i].Print();
-    }
+    }*/
 }
 
 

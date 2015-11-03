@@ -7,12 +7,21 @@
 
 using namespace std;
 
+/***
+
+params: hold problem variables and region info
+isos:   isotope database vector
+
+
+
+***/
+
 int main(int argc, char* argv[]) {
     // Defaults
     ParamsHolder params;
 
 
-    // Handle inputs
+    // Handle console inputs
     if(argc == 1) {
         cout << "No inputs. Assuming:" << endl;
         params.Print();
@@ -72,7 +81,9 @@ int main(int argc, char* argv[]) {
         temp_iso.Read(params.data_path);
         isos.push_back(temp_iso);
     }
+    cout << "..Database read." << endl;
 
+    // Build each region
 
 
     //isos.Print();
