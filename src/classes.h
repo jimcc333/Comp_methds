@@ -40,6 +40,7 @@ public:
     unsigned int egroups = 10;
     unsigned int f_order = 6;
     unsigned int s_order = 9;
+    unsigned int ordinates = 8;
     string data_path = "./Data/";
     string input_path = "./Input/input.txt";
 
@@ -52,6 +53,22 @@ public:
     void Print();
     void ReadIP();
 };
+
+
+class SolutionVariables {
+    SolutionVariables(ParamsHolder &params, vector<IsoInfo> isos);
+
+};
+
+
+
+
+
+
+
+
+
+
 
 
 

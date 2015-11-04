@@ -143,6 +143,7 @@ void ParamsHolder::Print() {
 // Reads input file
 void ParamsHolder::ReadIP() {
     // Open file
+    cout << "..Opening input file" << endl;
     ifstream input(input_path);
     if(!input.is_open()) {
         cout << endl << "(ParamsHolder)Couldn't open input file " << input_path << endl;
@@ -166,6 +167,18 @@ void ParamsHolder::ReadIP() {
                     manifest.push_back(name);
 
                 }
+        }
+
+        if(!line.compare(0,9,"ordinates")) {
+            istringstream iss(line);
+            iss >> name >> value;
+
+            ordinates = value;
+            if(value != 8 && value != 2) {
+                cout << "Code does not support " << value << " ordinates. Exiting :(" << endl;
+                exit(1);
+            }
+            cout << "..Number of ordinates: " << value << endl;
         }
 
         if(!line.compare("Region")) {

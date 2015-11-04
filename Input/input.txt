@@ -5,6 +5,8 @@ o16.xs
 zr90.xs
 u238.xs
 
+ordinates 8
+
 Region
 h1 3.9760e22
 o16 3.3804e22
