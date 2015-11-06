@@ -84,7 +84,9 @@ int main(int argc, char* argv[]) {
     cout << "..Database read." << endl;
 
     // Build flux vector
-    Phi phi1(params, isos);
+    Phi phi1(params);
+
+    params.BuildReg(isos);
 
     //isos.Print();
 

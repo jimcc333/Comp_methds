@@ -32,6 +32,8 @@ public:
     float dx;
     map<string,float> NumDens;
 
+    vector<float> total;
+
     void Print();
 };
 
@@ -62,16 +64,17 @@ public:
 
     void Print();
     void ReadIP();
+    void BuildReg(vector<IsoInfo> &isos);
 };
 
 
 class Phi {
 public:
-    Phi(ParamsHolder &params, vector<IsoInfo> &isos);
+    Phi(ParamsHolder &params);
 
     vector< vector < vector<float> > > flux; // [mesh][ordinate][energy]
-    vector<float> distance;
-
+    vector<float> distance;         // mesh-to-distance mapper
+    vector<unsigned int> itoreg;    // mesh-to-region mapper, region indexed from zero
 
 
 };

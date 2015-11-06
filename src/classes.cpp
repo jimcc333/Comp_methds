@@ -232,8 +232,36 @@ void ParamsHolder::ReadIP() {
     }*/
 }
 
+// Builds the region specific material data
+void ParamsHolder::BuildReg(vector<IsoInfo> &isos) {
+    // For each region r
+    for(int r = 0; r < region.size(); r++) {
+        // Resize variables
+        region[r].total.resize(egroups, 0);
 
-Phi::Phi(ParamsHolder &params, vector<IsoInfo> &isos) {
+        // Combine isos for each energy group e
+        for(int e = 0; e < egroups; e++) {
+
+            // For every isotope in region r
+            for(map<string,float>::iterator it = region[r].NumDens.begin(); it != region[r].NumDens.end(); ++it) {
+
+                // For each isotope in isos
+                for(unsigned int iso = 0; iso < isos.size(); iso++) {
+                    if(!isos[iso].name.compare(it->first + ".xs")){
+
+                        region[r].total[e] += it->second * isos[iso].total[e];
+                    }
+                }
+            }
+
+            //cout << region[r].total[e] << " ";
+        }
+         //cout << endl;
+    }
+}
+
+
+Phi::Phi(ParamsHolder &params) {
     // Create empty ordinate and energy flux to push, all values zero
     const vector< vector<float> > init(params.ordinates, vector<float>(params.egroups, 0));
 
@@ -244,6 +272,7 @@ Phi::Phi(ParamsHolder &params, vector<IsoInfo> &isos) {
     //  First point is at distance zero
     distance.push_back(0);
     flux.push_back(init);
+    itoreg.push_back(0);
 
     // Goes through each region to initiate phi and distance
     for(int r = 0; r < params.region.size(); r++) {
@@ -254,13 +283,18 @@ Phi::Phi(ParamsHolder &params, vector<IsoInfo> &isos) {
         const unsigned int start = distance.size();
 
         distance.resize(distance.size() + reg_mesh);
-        flux.resize(flux.size() + reg_mesh);
+        flux.resize(flux.size() + reg_mesh, init);
+        itoreg.resize(itoreg.size() + reg_mesh, r);
 
         for(int i = start; i < reg_mesh + start; i++) {
             distance[i] = distance[i-1]+dx2;
-            flux[i] = init;
         }
     }
+
+/*
+    for(int i = 0; i < distance.size(); i++){
+        cout << i << " " << itoreg[i] << " " << distance[i] << " " << flux[i][0][0] << endl;
+    }*/
 }
 
 
