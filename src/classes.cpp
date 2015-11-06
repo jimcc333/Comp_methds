@@ -191,7 +191,7 @@ void ParamsHolder::ReadIP() {
             istringstream iss(line);
             iss >> name >> value;
 
-            source = value;
+            init_source = value;
             cout << "..Distributed source strength: " << value << endl;
         }
 
@@ -257,11 +257,10 @@ void ParamsHolder::BuildReg(vector<IsoInfo> &isos) {
                 for(unsigned int iso = 0; iso < isos.size(); iso++) {
                     if(!isos[iso].name.compare(it->first + ".xs")){
 
-                        region[r].total[e] += it->second * isos[iso].total[e];
+                        region[r].total[e] += it->second * isos[iso].total[e] * 1E-24;
                     }
                 }
             }
-
             //cout << region[r].total[e] << " ";
         }
          //cout << endl;
@@ -299,6 +298,15 @@ Phi::Phi(ParamsHolder &params) {
         }
     }
     tot = distance.size();
+
+    // Initiate source
+    source.resize(tot, init);
+    for(int i = 0; i < tot; i++) {
+        for(int n = 0; n < params.ordinates; n++) {
+            source[i][n][0] = params.init_source * params.we[n] / 2.;
+        }
+    }
+
 /*
     for(int i = 0; i < distance.size(); i++){
         cout << i << " " << itoreg[i] << " " << distance[i] << " " << flux[i][0][0] << endl;
@@ -332,9 +340,13 @@ void Phi::SweepLR(ParamsHolder &params) {
 
             for(unsigned int g = 0; g < params.egroups; g++) {
             // For group g
+                if(i%2 == 0) {
+                    flux[i][n][g] = 2.*flux[i-1][n][g] - flux[i-2][n][g];
+                } else {
                 ///todo check source being multiplied by delta
-                flux[i][n][g] = (params.region[itoreg[i]].dx * params.source * params.we[n] / 2. + 2.*params.mu[n]*flux[i-1][n][g])
-                                / (2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
+                    flux[i][n][g] = (params.region[itoreg[i]].dx * source[i][n][g] * params.we[n] / 2. + 2.*params.mu[n]*flux[i-1][n][g])
+                                    / (2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
+                }
             }
 
         }
@@ -351,9 +363,13 @@ void Phi::SweepRL(ParamsHolder &params) {
 
             for(unsigned int g = 0; g < params.egroups; g++) {
             // For group g
+                if(i%2 == 0) {
+                    flux[i][n][g] = 2.*flux[i+1][n][g] - flux[i+2][n][g];
+                } else {
                 ///todo check source being multiplied by delta
-                flux[i][n][g] = (params.region[itoreg[i]].dx * params.source * params.we[n] / 2. - 2.*params.mu[n]*flux[i+1][n][g])
-                                / (-2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
+                    flux[i][n][g] = (params.region[itoreg[i]].dx * source[i][n][g] * params.we[n] / 2. - 2.*params.mu[n]*flux[i+1][n][g])
+                                    / (-2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
+                }
             }
         }
     }

@@ -59,8 +59,9 @@ public:
     float mu[8] = {0.9603, 0.7967, 0.5255, 0.1834, -0.1834, -0.5255, -0.7967, -0.9603};
     float we[8] = {0.1012, 0.2224, 0.3137, 0.3627, 0.3627, 0.3137, 0.2224, 0.1012};
 
+
     // Distributed source strength
-    float source;
+    float init_source;
 
     void Print();
     void ReadIP();
@@ -77,12 +78,14 @@ public:
     vector< vector < vector<float> > > flux; // [mesh][ordinate][energy]
     vector<float> distance;         // mesh-to-distance mapper
     vector<unsigned int> itoreg;    // mesh-to-region mapper, region indexed from zero
-
+    vector< vector < vector<float> > > source; // [mesh][ordinate][energy]
 
     void Print();
     void SweepLR(ParamsHolder &params);
     void SweepRL(ParamsHolder &params);
 };
+
+
 
 
 

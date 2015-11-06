@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
     phi1.SweepLR(params);
     phi1.SweepRL(params);
 
-    //isos.Print();
+    phi1.Print();
 
     return 0;
 }
