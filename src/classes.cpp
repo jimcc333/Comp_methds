@@ -179,6 +179,14 @@ void ParamsHolder::ReadIP() {
             cout << "..Number of ordinates: " << value << endl;
         }
 
+        if(!line.compare(0,6,"source")) {
+            istringstream iss(line);
+            iss >> name >> value;
+
+            source = value;
+            cout << "..Distributed source strength: " << value << endl;
+        }
+
         if(!line.compare("Region")) {
                 counter++;
                 cout << "..Reading region " << counter << endl;

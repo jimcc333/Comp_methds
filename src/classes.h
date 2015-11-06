@@ -51,6 +51,15 @@ public:
     // Isotope names
     vector<string> manifest;
 
+    // Ordinate info
+    const float mu2[2] = {0.5774, -0.5774};
+    const float we2[2] = {1, 1};
+    const float mu8[8] = {0.9603, 0.7967, 0.5255, 0.1834, -0.1834, -0.5255, -0.7967, -0.9603};
+    const float we8[8] = {0.1012, 0.2224, 0.3137, 0.3627, 0.3627, 0.3137, 0.2224, 0.1012};
+
+    // Distributed source strength
+    float source;
+
     void Print();
     void ReadIP();
 };

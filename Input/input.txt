@@ -6,6 +6,7 @@ zr90.xs
 u238.xs
 
 ordinates 8
+source 1e10
 
 Region
 h1 3.9760e22
