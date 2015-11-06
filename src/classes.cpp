@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "classes.h"
 
 IsoInfo::IsoInfo(unsigned int egroups, unsigned int f_order, unsigned int s_order, string iso_name) {
@@ -225,6 +223,52 @@ void ParamsHolder::ReadIP() {
         region[i].Print();
     }*/
 }
+
+
+Phi::Phi(ParamsHolder &params, vector<IsoInfo> &isos) {
+    // Create empty ordinate and energy flux to push, all values zero
+    const vector< vector<float> > init(params.ordinates, vector<float>(params.egroups, 0));
+
+    // Determine number of mesh points
+    unsigned int tot_mesh = 0;
+    unsigned int reg_mesh;
+
+    //  First point is at distance zero
+    distance.push_back(0);
+    flux.push_back(init);
+
+    // Goes through each region to initiate phi and distance
+    for(int r = 0; r < params.region.size(); r++) {
+        reg_mesh = floor(params.region[r].thickness / params.region[r].dx);
+        reg_mesh *= 2; // To include half-points
+
+        const float dx2 = params.region[r].dx / 2;
+        const unsigned int start = distance.size();
+
+        distance.resize(distance.size() + reg_mesh);
+        flux.resize(flux.size() + reg_mesh);
+
+        for(int i = start; i < reg_mesh + start; i++) {
+            distance[i] = distance[i-1]+dx2;
+            flux[i] = init;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -83,8 +83,8 @@ int main(int argc, char* argv[]) {
     }
     cout << "..Database read." << endl;
 
-    // Build each region
-
+    // Build flux vector
+    Phi phi1(params, isos);
 
     //isos.Print();
 

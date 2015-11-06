@@ -3,6 +3,7 @@
 
 #include <eigen3/Eigen/Core>
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
@@ -55,8 +56,14 @@ public:
 };
 
 
-class SolutionVariables {
-    SolutionVariables(ParamsHolder &params, vector<IsoInfo> isos);
+class Phi {
+public:
+    Phi(ParamsHolder &params, vector<IsoInfo> &isos);
+
+    vector< vector < vector<float> > > flux; // [mesh][ordinate][energy]
+    vector<float> distance;
+
+
 
 };
 
