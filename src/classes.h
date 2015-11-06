@@ -56,8 +56,8 @@ public:
     // Ordinate info
     const float mu2[2] = {0.5774, -0.5774};
     const float we2[2] = {1, 1};
-    const float mu8[8] = {0.9603, 0.7967, 0.5255, 0.1834, -0.1834, -0.5255, -0.7967, -0.9603};
-    const float we8[8] = {0.1012, 0.2224, 0.3137, 0.3627, 0.3627, 0.3137, 0.2224, 0.1012};
+    float mu[8] = {0.9603, 0.7967, 0.5255, 0.1834, -0.1834, -0.5255, -0.7967, -0.9603};
+    float we[8] = {0.1012, 0.2224, 0.3137, 0.3627, 0.3627, 0.3137, 0.2224, 0.1012};
 
     // Distributed source strength
     float source;
@@ -72,11 +72,16 @@ class Phi {
 public:
     Phi(ParamsHolder &params);
 
+    unsigned int tot;
+
     vector< vector < vector<float> > > flux; // [mesh][ordinate][energy]
     vector<float> distance;         // mesh-to-distance mapper
     vector<unsigned int> itoreg;    // mesh-to-region mapper, region indexed from zero
 
 
+    void Print();
+    void SweepLR(ParamsHolder &params);
+    void SweepRL(ParamsHolder &params);
 };
 
 

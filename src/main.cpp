@@ -83,10 +83,15 @@ int main(int argc, char* argv[]) {
     }
     cout << "..Database read." << endl;
 
+    // Builds the necessary parameters for each region
+    params.BuildReg(isos);
+
     // Build flux vector
     Phi phi1(params);
 
-    params.BuildReg(isos);
+    /// this will be in a while not converged loop
+    phi1.SweepLR(params);
+    phi1.SweepRL(params);
 
     //isos.Print();
 

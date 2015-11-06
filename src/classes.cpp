@@ -176,6 +176,14 @@ void ParamsHolder::ReadIP() {
                 cout << "Code does not support " << value << " ordinates. Exiting :(" << endl;
                 exit(1);
             }
+
+            ///TODO this needs to be fixed
+            if(value == 2) {
+                mu[0] = mu2[0];
+                mu[1] = mu2[1];
+                we[0] = we2[0];
+                we[1] = we2[1];
+            }
             cout << "..Number of ordinates: " << value << endl;
         }
 
@@ -290,17 +298,66 @@ Phi::Phi(ParamsHolder &params) {
             distance[i] = distance[i-1]+dx2;
         }
     }
-
+    tot = distance.size();
 /*
     for(int i = 0; i < distance.size(); i++){
         cout << i << " " << itoreg[i] << " " << distance[i] << " " << flux[i][0][0] << endl;
     }*/
 }
 
+void Phi::Print() {
+    for(unsigned int i = 0; i < tot; i++) {
+    // For mesh point i
+        cout << "Mesh " << i << endl;
+        for(unsigned int n = 0; n < flux[0].size(); n++) {
+        // For right-pointed ordinate n
+
+            for(unsigned int g = 0; g < flux[0][0].size(); g++) {
+                    cout << flux[i][n][g] << " ";
+            }
+            cout << endl;
+        }
+    }
+
+}
 
 
+// Sweeps from left to right
+void Phi::SweepLR(ParamsHolder &params) {
+    for(unsigned int i = 1; i < tot; i++) {
+    // For mesh point i
 
+        for(unsigned int n = 0; n < params.ordinates/2; n++) {
+        // For right-pointed ordinate n
 
+            for(unsigned int g = 0; g < params.egroups; g++) {
+            // For group g
+                ///todo check source being multiplied by delta
+                flux[i][n][g] = (params.region[itoreg[i]].dx * params.source * params.we[n] / 2. + 2.*params.mu[n]*flux[i-1][n][g])
+                                / (2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
+            }
+
+        }
+    }
+}
+
+// Sweeps from right to left
+void Phi::SweepRL(ParamsHolder &params) {
+    for(int i = tot-2; i >= 0; i--) {
+    // For mesh point i
+
+        for(unsigned int n = params.ordinates/2; n < params.ordinates; n++) {
+        // For left-pointed ordinate n
+
+            for(unsigned int g = 0; g < params.egroups; g++) {
+            // For group g
+                ///todo check source being multiplied by delta
+                flux[i][n][g] = (params.region[itoreg[i]].dx * params.source * params.we[n] / 2. - 2.*params.mu[n]*flux[i+1][n][g])
+                                / (-2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
+            }
+        }
+    }
+}
 
 
 
