@@ -95,10 +95,12 @@ public:
     vector< vector < vector<float> > > source; // [mesh][ordinate][energy]
 
     void PrintFlux();
+    void PrintFlux(unsigned int ordinate, unsigned int group);
     void PrintSource();
     void SweepLR(ParamsHolder &params);
     void SweepRL(ParamsHolder &params);
     void CalcSource(ParamsHolder &params);
+    void AddFlux(vector< vector < vector<float> > > addedflux);
 };
 
 

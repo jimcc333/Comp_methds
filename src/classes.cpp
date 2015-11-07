@@ -359,6 +359,13 @@ void Phi::PrintFlux() {
     }
 }
 
+void Phi::PrintFlux(unsigned int ordinate, unsigned int group) {
+    cout << "Flux of ordinate " << ordinate << " and group " << group << ":" << endl;
+    for(unsigned int i = 0; i < tot; i++) {
+        cout << flux[i][ordinate][group] << endl;
+    }
+}
+
 void Phi::PrintSource() {
     cout << "------- Source -------" << endl;
     for(unsigned int i = 0; i < tot; i++) {
@@ -460,11 +467,18 @@ void Phi::CalcSource(ParamsHolder &params) {
             }
         }
     }
-
 }
 
 
-
+void Phi::AddFlux(vector< vector < vector<float> > > addedflux) {
+    for(int i = 0; i < addedflux.size(); i++) {
+        for(int j = 0; j < addedflux[i].size(); j++) {
+            for(int k = 0; k < addedflux[i][j].size(); k++) {
+                flux[i][j][k] += addedflux[i][j][k];
+            }
+        }
+    }
+}
 
 
 

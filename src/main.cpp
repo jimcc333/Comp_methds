@@ -88,14 +88,25 @@ int main(int argc, char* argv[]) {
 
     // Build flux vector
     Phi phi1(params);
+    Phi phi2(params);
 
-    /// this will be in a while not converged loop
+    // First sweep using given source
+    phi1.SweepLR(params);
+    phi1.SweepRL(params);
+
+    phi2.AddFlux(phi1.flux);
+
+    for(int counter = 0; counter < 100; counter++) {
+        cout << "Iteration " << counter << endl;
+        phi1.CalcSource(params);
         phi1.SweepLR(params);
         phi1.SweepRL(params);
+        phi2.AddFlux(phi1.flux);
+    }
 
-        phi1.CalcSource(params);
+    phi2.PrintFlux(0,1);
+    phi2.PrintFlux(0,9);
 
-    phi1.PrintSource();
 
     return 0;
 }
