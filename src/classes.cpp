@@ -251,14 +251,23 @@ void ParamsHolder::BuildReg(vector<IsoInfo> &isos) {
         // Resize variables
         region[r].total.resize(egroups, 0);
 
-        // Combine isos for each energy group e
+        Eigen::MatrixXf temp_matrix;
+        temp_matrix.resize(egroups, egroups);
+        temp_matrix.setZero();
+        region[r].skernel.resize(s_order, temp_matrix);
+
+        ///TODO the following two nested for loops can be merged to lower code overhead
+
+        // Calculate total cross section
         for(int e = 0; e < egroups; e++) {
+        // Combine isos for each energy group e
 
-            // For every isotope in region r
             for(map<string,float>::iterator it = region[r].NumDens.begin(); it != region[r].NumDens.end(); ++it) {
+            // For every isotope in region r
 
-                // For each isotope in isos
                 for(unsigned int iso = 0; iso < isos.size(); iso++) {
+                // For each isotope in isos
+
                     if(!isos[iso].name.compare(it->first + ".xs")){
 
                         region[r].total[e] += it->second * isos[iso].total[e] * 1E-24;
@@ -268,6 +277,23 @@ void ParamsHolder::BuildReg(vector<IsoInfo> &isos) {
             //cout << region[r].total[e] << " ";
         }
          //cout << endl;
+
+        // Calculate scattering kernel
+        for(int o = 0; o < s_order; o++) {
+        // For order o
+
+            for(map<string,float>::iterator it = region[r].NumDens.begin(); it != region[r].NumDens.end(); ++it) {
+            // For every isotope in region r
+
+                for(unsigned int iso = 0; iso < isos.size(); iso++) {
+                // For each isotope in isos
+
+                    if(!isos[iso].name.compare(it->first + ".xs")){
+                        region[r].skernel[o] += isos[iso].skernel[o] * it->second * 1E-24;
+                    }
+                }
+            }
+        }
     }
 }
 

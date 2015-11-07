@@ -20,7 +20,7 @@ public:
     Eigen::MatrixXf ffactor; // ffactor[order][energy]
     Eigen::VectorXf chi;
     Eigen::VectorXf nufission;
-    vector< Eigen::MatrixXf > skernel; // skernel[from][to]
+    vector< Eigen::MatrixXf > skernel; // skernel[order][from][to]
 
     void Print();
     void Read(string data_path);
@@ -33,6 +33,7 @@ public:
     map<string,float> NumDens;
 
     vector<float> total;
+    vector< Eigen::MatrixXf > skernel; // skernel[order][from][to]
 
     void Print();
 };
