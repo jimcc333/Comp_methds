@@ -343,7 +343,8 @@ Phi::Phi(ParamsHolder &params) {
     }*/
 }
 
-void Phi::Print() {
+void Phi::PrintFlux() {
+    cout << "------- Phi -------" << endl;
     for(unsigned int i = 0; i < tot; i++) {
     // For mesh point i
         cout << "Mesh " << i << endl;
@@ -356,7 +357,22 @@ void Phi::Print() {
             cout << endl;
         }
     }
+}
 
+void Phi::PrintSource() {
+    cout << "------- Source -------" << endl;
+    for(unsigned int i = 0; i < tot; i++) {
+    // For mesh point i
+        cout << "Mesh " << i << endl;
+        for(unsigned int n = 0; n < flux[0].size(); n++) {
+        // For right-pointed ordinate n
+
+            for(unsigned int g = 0; g < flux[0][0].size(); g++) {
+                    cout << source[i][n][g] << " ";
+            }
+            cout << endl;
+        }
+    }
 }
 
 
@@ -421,7 +437,6 @@ void Phi::CalcSource(ParamsHolder &params) {
             // For source group g
 
                 for(unsigned int l = 0; l < params.s_order; l++) {
-                ///TODO check the upper bound of l
                 // For legengre order l
 
                     for(unsigned int k = 0; k < params.egroups; k++) {
@@ -432,9 +447,16 @@ void Phi::CalcSource(ParamsHolder &params) {
                             inner += params.we[p] * params.leg[p][l] * flux[i][p][k];
                         }
 
-
+                        middle += inner * params.region[itoreg[i]].skernel[l](k,g);
+                        inner = 0;
                     }
+
+                    outer += middle * (2.*l + 1) * params.leg[n][l];
+                    middle = 0;
                 }
+
+                source[i][n][g] = 0.5 * outer;
+                outer = 0;
             }
         }
     }

@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
 
         phi1.CalcSource(params);
 
-    //phi1.Print();
+    phi1.PrintSource();
 
     return 0;
 }

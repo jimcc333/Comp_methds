@@ -94,7 +94,8 @@ public:
     vector<unsigned int> itoreg;    // mesh-to-region mapper, region indexed from zero
     vector< vector < vector<float> > > source; // [mesh][ordinate][energy]
 
-    void Print();
+    void PrintFlux();
+    void PrintSource();
     void SweepLR(ParamsHolder &params);
     void SweepRL(ParamsHolder &params);
     void CalcSource(ParamsHolder &params);
