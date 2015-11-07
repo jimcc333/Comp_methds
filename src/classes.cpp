@@ -380,6 +380,65 @@ void Phi::SweepRL(ParamsHolder &params) {
 }
 
 
+void Phi::CalcSource(ParamsHolder &params) {
+    float inner = 0;
+    float middle = 0;
+    float outer = 0;
+
+    for(int i = 0; i < tot; i++) {
+    // For mesh point i
+
+        for(unsigned int n = 0; n < params.ordinates; n++) {
+        // For source ordinate n
+
+            for(unsigned int g = 0; g < params.egroups; g++) {
+            // For source group g
+
+                for(unsigned int l = 0; l < params.s_order; l++) {
+                ///TODO check the upper bound of l
+                // For legengre order l
+
+                    for(unsigned int k = 0; k < params.egroups; k++) {
+                    // For flux group k
+
+                        for(unsigned int p = 0; p < params.ordinates; p++) {
+                        // For flux ordinate p
+                            inner += params.we[p] * params.leg[p][l] * flux[i][p][k];
+                        }
+
+
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

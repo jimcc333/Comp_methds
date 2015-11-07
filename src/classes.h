@@ -96,6 +96,7 @@ public:
     void Print();
     void SweepLR(ParamsHolder &params);
     void SweepRL(ParamsHolder &params);
+    void CalcSource(ParamsHolder &params);
 };
 
 

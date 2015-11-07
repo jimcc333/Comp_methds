@@ -90,8 +90,10 @@ int main(int argc, char* argv[]) {
     Phi phi1(params);
 
     /// this will be in a while not converged loop
-    phi1.SweepLR(params);
-    phi1.SweepRL(params);
+        phi1.SweepLR(params);
+        phi1.SweepRL(params);
+
+        phi1.CalcSource(params);
 
     //phi1.Print();
 
