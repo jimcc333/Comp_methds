@@ -177,12 +177,16 @@ void ParamsHolder::ReadIP() {
                 exit(1);
             }
 
-            ///TODO this needs to be fixed
+            ///TODO this should to be fixed lol
             if(value == 2) {
                 mu[0] = mu2[0];
                 mu[1] = mu2[1];
                 we[0] = we2[0];
                 we[1] = we2[1];
+                for(int i = 0; i < 9; i++) {
+                    leg[0][i] = leg2[0][i];
+                    leg[1][i] = leg2[1][i];
+                }
             }
             cout << "..Number of ordinates: " << value << endl;
         }
