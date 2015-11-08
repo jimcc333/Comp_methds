@@ -88,24 +88,33 @@ int main(int argc, char* argv[]) {
 
     // Build flux vector
     Phi phi1(params);
-    Phi phi2(params);
+    Phi total(params);
 
     // First sweep using given source
     phi1.SweepLR(params);
     phi1.SweepRL(params);
 
-    phi2.AddFlux(phi1.flux);
+    total.AddFlux(phi1.flux);
 
-    for(int counter = 0; counter < 100; counter++) {
-        cout << "Iteration " << counter << endl;
+    unsigned int counter;
+    cout << "Starting solution..." << endl;
+    for(counter = 0; counter < 100; counter++) {
+        // Progress output
+        cout << "Iteration: " << counter << "\r";
+        cout.flush();
+
+        // Calculate new source
         phi1.CalcSource(params);
+        // Sweep
         phi1.SweepLR(params);
         phi1.SweepRL(params);
-        phi2.AddFlux(phi1.flux);
+        // Add to total
+        total.AddFlux(phi1.flux);
     }
+    cout << endl << "Calculation complete after " << counter << " iterations!" << endl;
 
-    phi2.PrintFlux(0,1);
-    phi2.PrintFlux(0,9);
+    total.PrintFlux(0,1);
+    total.PrintFlux(0,9);
 
 
     return 0;

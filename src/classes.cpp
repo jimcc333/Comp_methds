@@ -152,6 +152,7 @@ void ParamsHolder::ReadIP() {
     string name;
     float value;
     unsigned int counter = 0;
+    float tot_thickness = 0;
 
     while(getline(input, line)) {
         if(!line.compare("Manifest")) {
@@ -220,6 +221,7 @@ void ParamsHolder::ReadIP() {
                 iss >> name >> value;
 
                 temp_region.thickness = value;
+                tot_thickness += value;
 
                 // Store delta
                 getline(input, line);
@@ -237,6 +239,7 @@ void ParamsHolder::ReadIP() {
         }
 
     }
+    cout << ".Input file read. Total thickness: " << tot_thickness << "." << endl;
     /*
     for(int i = 0; i < region.size(); i++) {
         cout << "Region " << i+1 << " ";

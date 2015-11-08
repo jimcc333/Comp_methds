@@ -1,34 +1,52 @@
 Manifest
-u235.xs
 h1.xs
 o16.xs
-zr90.xs
-u238.xs
+b10.xs
 
 ordinates 8
 source 1e10
 
 Region
-h1 3.9760e22
-o16 3.3804e22
-zr90 4.0976e21
-u235 2.5064e20
-u238 6.7115e21
-X 10
-dx 1
+h1 3.35e22
+o16 1.67e22
+X 4
+dx 0.1
 
 Region
-h1 3.9760e22
-o16 3.3804e22
-zr90 4.0976e21
-X 8
-dx 2
-
-Region
-h1 3.9760e22
-o16 3.3804e22
-zr90 4.0976e21
-u235 2.5064e20
-u238 6.7115e21
+h1 3.35e22
+o16 1.67e22
+b10 2.00e21
 X 2
-dx 1
+dx 0.1
+
+Region
+h1 3.35e22
+o16 1.67e22
+X 3
+dx 0.1
+
+Region
+h1 3.35e22
+o16 1.67e22
+b10 2.00e21
+X 2
+dx 0.1
+
+Region
+h1 3.35e22
+o16 1.67e22
+X 3
+dx 0.1
+
+Region
+h1 3.35e22
+o16 1.67e22
+b10 2.00e21
+X 2
+dx 0.1
+
+Region
+h1 3.35e22
+o16 1.67e22
+X 4
+dx 0.1
