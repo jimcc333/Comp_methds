@@ -444,7 +444,7 @@ void Phi::CalcSource(ParamsHolder &params) {
     float middle = 0;
     float outer = 0;
 
-    for(int i = 0; i < tot; i++) {
+    for(int i = 1; i < tot; i+=2) {
     // For mesh point i
 
         for(unsigned int n = 0; n < params.ordinates; n++) {

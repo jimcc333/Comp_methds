@@ -26,27 +26,39 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
     }
 
     float tot_flux[params.egroups];
+    float flux = 0;
     ofstream output;
     output.open(params.output_name);
 
     output << "Transport code output file." << endl << endl;
 
-    output << "___Angle int. flux___" << endl;
-    for(int i = 0; i < phi.tot; i++) {
+    output << "_____Total Flux_____" << endl;
+    for(int i = 1; i < phi.tot; i+=2) {
+        flux = 0;
+        for(int g = 0; g < params.egroups; g++) {
+            for(int n = 0; n < params.ordinates; n++) {
+                flux += phi.flux[i][n][g] * params.we[n] / 2;
+            }
+        }
+        output << phi.distance[i] << " " << flux << endl;
+    }
+
+    output << endl << endl << "___Angle int. flux___" << endl;
+    for(int i = 1; i < phi.tot; i+=2) {
         output << phi.distance[i];
         for(int g = 0; g < params.egroups; g++) {
             tot_flux[g] = 0;
             for(int n = 0; n < params.ordinates; n++) {
-                tot_flux[g] += phi.flux[i][n][g];
+                tot_flux[g] += phi.flux[i][n][g] * params.we[n] / 2;
             }
             output << " " << tot_flux[g];
         }
         output << endl;
     }
 
-    output << endl << "--------------------------------------------" << endl;
+    output << endl << endl << "_____Psi_____" << endl;
     output << "[distance]" << endl << "[ordinate X group]" << endl << endl;
-    for(int i = 0; i < phi.flux.size(); i++) {
+    for(int i = 1; i < phi.flux.size(); i+=2) {
         output << phi.distance[i] << endl;
         for(int n = 0; n < phi.flux[i].size(); n++) {
             for(int g = 0; g < phi.flux[i][n].size(); g++) {
@@ -147,7 +159,7 @@ int main(int argc, char* argv[]) {
 
     unsigned int counter;
     cout << "Starting solution..." << endl;
-    for(counter = 0; counter < 3; counter++) {
+    for(counter = 0; counter < 100; counter++) {
         // Progress output
         cout << "Iteration: " << counter << "\r";
         cout.flush();
