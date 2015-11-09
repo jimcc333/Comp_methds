@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <chrono>
 
 #include "classes.cpp"
 
@@ -28,6 +29,8 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
     ofstream output;
     output.open(params.output_name);
 
+    output << "Transport code output file." << endl << endl;
+
     output << "___Angle int. flux___" << endl;
     for(int i = 0; i < phi.tot; i++) {
         output << phi.distance[i];
@@ -37,6 +40,19 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
                 tot_flux[g] += phi.flux[i][n][g];
             }
             output << " " << tot_flux[g];
+        }
+        output << endl;
+    }
+
+    output << endl << "--------------------------------------------" << endl;
+    output << "[distance]" << endl << "[ordinate X group]" << endl << endl;
+    for(int i = 0; i < phi.flux.size(); i++) {
+        output << phi.distance[i] << endl;
+        for(int n = 0; n < phi.flux[i].size(); n++) {
+            for(int g = 0; g < phi.flux[i][n].size(); g++) {
+                output << phi.flux[i][n][g] << " ";
+            }
+            output << endl;
         }
         output << endl;
     }
@@ -131,7 +147,7 @@ int main(int argc, char* argv[]) {
 
     unsigned int counter;
     cout << "Starting solution..." << endl;
-    for(counter = 0; counter < 100; counter++) {
+    for(counter = 0; counter < 3; counter++) {
         // Progress output
         cout << "Iteration: " << counter << "\r";
         cout.flush();
