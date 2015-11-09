@@ -206,6 +206,11 @@ void ParamsHolder::ReadIP() {
             output_name = name2 + ".txt";
         }
 
+        if(!line.compare(0,9,"tolerance")) {
+            istringstream iss(line);
+            iss >> name >> value;
+            conv_tol = value;
+        }
 
         if(!line.compare("Region")) {
                 counter++;
@@ -490,8 +495,19 @@ void Phi::AddFlux(vector< vector < vector<float> > > addedflux) {
     }
 }
 
-
-
+// Returns true if converged
+bool Phi::ConvCheck(vector< vector < vector<float> > > &total, float tolerance) {
+    for(int i = 0; i < total.size(); i++) {
+        for(int j = 0; j < total[i].size(); j++) {
+            for(int k = 0; k < total[i][j].size(); k++) {
+                if( (flux[i][j][k] / total[i][j][k]) > tolerance){
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
 
 
 

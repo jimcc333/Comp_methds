@@ -48,6 +48,7 @@ public:
     string data_path = "./Data/";
     string input_path = "./Input/input.txt";
     string output_name = "output.txt";
+    float conv_tol = 0.002;
 
     // Problem objects
     vector<RegionInfo> region;
@@ -101,6 +102,7 @@ public:
     void SweepRL(ParamsHolder &params);
     void CalcSource(ParamsHolder &params);
     void AddFlux(vector< vector < vector<float> > > addedflux);
+    bool ConvCheck(vector< vector < vector<float> > > &total, float tolerance);
 };
 
 

@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
 
     unsigned int counter;
     cout << "Starting solution..." << endl;
-    for(counter = 0; counter < 100; counter++) {
+    for(counter = 0; counter < 200; counter++) {
         // Progress output
         cout << "Iteration: " << counter << "\r";
         cout.flush();
@@ -169,10 +169,14 @@ int main(int argc, char* argv[]) {
         // Sweep
         phi1.SweepLR(params);
         phi1.SweepRL(params);
+        // Check convergence
+        if(phi1.ConvCheck(total.flux, params.conv_tol)) {
+            cout << endl << "Calculation complete after " << counter << " iterations!" << endl;
+            counter = 500;
+        }
         // Add to total
         total.AddFlux(phi1.flux);
     }
-    cout << endl << "Calculation complete after " << counter << " iterations!" << endl;
 
     cout << "Generating output file " << params.output_name << endl;
     OutputGen(total, params);
