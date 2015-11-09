@@ -47,6 +47,7 @@ public:
     unsigned int ordinates = 8;
     string data_path = "./Data/";
     string input_path = "./Input/input.txt";
+    string output_name = "output.txt";
 
     // Problem objects
     vector<RegionInfo> region;
@@ -82,7 +83,6 @@ public:
     void BuildReg(vector<IsoInfo> &isos);
 };
 
-
 class Phi {
 public:
     Phi(ParamsHolder &params);
@@ -102,7 +102,6 @@ public:
     void CalcSource(ParamsHolder &params);
     void AddFlux(vector< vector < vector<float> > > addedflux);
 };
-
 
 
 

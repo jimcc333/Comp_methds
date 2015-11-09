@@ -2,8 +2,10 @@
 // Cem Bagdatli
 #include <iostream>
 #include <fstream>
-#include "classes.cpp"
 #include <vector>
+
+#include "classes.cpp"
+
 
 using namespace std;
 
@@ -15,6 +17,37 @@ isos:   isotope database vector
 
 
 ***/
+
+void OutputGen(Phi &phi, ParamsHolder &params) {
+    ifstream infile(params.output_name);
+    if(infile.good()) {
+        cout << params.output_name << " already exists. Overwriting old one." << endl;
+    }
+
+    float tot_flux[params.egroups];
+    ofstream output;
+    output.open(params.output_name);
+
+    output << "___Angle int. flux___" << endl;
+    for(int i = 0; i < phi.tot; i++) {
+        output << phi.distance[i];
+        for(int g = 0; g < params.egroups; g++) {
+            tot_flux[g] = 0;
+            for(int n = 0; n < params.ordinates; n++) {
+                tot_flux[g] += phi.flux[i][n][g];
+            }
+            output << " " << tot_flux[g];
+        }
+        output << endl;
+    }
+
+    output.close();
+
+    cout << "Completed writing results." << endl;
+
+    return;
+
+}
 
 int main(int argc, char* argv[]) {
     // Defaults
@@ -113,9 +146,8 @@ int main(int argc, char* argv[]) {
     }
     cout << endl << "Calculation complete after " << counter << " iterations!" << endl;
 
-    total.PrintFlux(0,1);
-    total.PrintFlux(0,9);
-
+    cout << "Generating output file " << params.output_name << endl;
+    OutputGen(total, params);
 
     return 0;
 }

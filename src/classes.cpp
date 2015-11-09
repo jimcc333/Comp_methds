@@ -149,7 +149,7 @@ void ParamsHolder::ReadIP() {
     }
 
     string line;
-    string name;
+    string name, name2;
     float value;
     unsigned int counter = 0;
     float tot_thickness = 0;
@@ -199,6 +199,13 @@ void ParamsHolder::ReadIP() {
             init_source = value;
             cout << "..Distributed source strength: " << value << endl;
         }
+
+        if(!line.compare(0,6,"output")) {
+            istringstream iss(line);
+            iss >> name >> name2;
+            output_name = name2 + ".txt";
+        }
+
 
         if(!line.compare("Region")) {
                 counter++;
