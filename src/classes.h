@@ -102,7 +102,7 @@ public:
     void SweepLR(ParamsHolder &params);
     void SweepRL(ParamsHolder &params);
     void CalcSource(ParamsHolder &params);
-    void AddFlux(vector< vector < vector<float> > > addedflux);
+    void AddFlux(vector< vector < vector<float> > > &addedflux);
     bool ConvCheck(vector< vector < vector<float> > > &total, float tolerance);
 };
 

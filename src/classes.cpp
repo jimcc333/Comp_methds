@@ -296,7 +296,6 @@ void ParamsHolder::BuildReg(vector<IsoInfo> &isos) {
                 // For each isotope in isos
 
                     if(!isos[iso].name.compare(it->first + ".xs")){
-
                         region[r].total[e] += it->second * isos[iso].total[e] * 1E-24;
                     }
                 }
@@ -316,6 +315,7 @@ void ParamsHolder::BuildReg(vector<IsoInfo> &isos) {
                 // For each isotope in isos
 
                     if(!isos[iso].name.compare(it->first + ".xs")){
+                        cout << isos[iso].name << " and " << isos[iso].skernel[o] << endl;
                         region[r].skernel[o] += isos[iso].skernel[o] * it->second * 1E-24;
                     }
                 }
@@ -424,7 +424,7 @@ void Phi::SweepLR(ParamsHolder &params) {
                     flux[i][n][g] = 2.*flux[i-1][n][g] - flux[i-2][n][g];
                 } else {
                 ///todo check source being multiplied by delta
-                    flux[i][n][g] = (params.region[itoreg[i]].dx * source[i][n][g] * params.we[n] / 2. + 2.*params.mu[n]*flux[i-1][n][g])
+                    flux[i][n][g] = (params.region[itoreg[i]].dx * source[i][n][g] + 2.*params.mu[n]*flux[i-1][n][g])
                                     / (2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
                 }
             }
@@ -447,7 +447,7 @@ void Phi::SweepRL(ParamsHolder &params) {
                     flux[i][n][g] = 2.*flux[i+1][n][g] - flux[i+2][n][g];
                 } else {
                 ///todo check source being multiplied by delta
-                    flux[i][n][g] = (params.region[itoreg[i]].dx * source[i][n][g] * params.we[n] / 2. - 2.*params.mu[n]*flux[i+1][n][g])
+                    flux[i][n][g] = (params.region[itoreg[i]].dx * source[i][n][g] - 2.*params.mu[n]*flux[i+1][n][g])
                                     / (-2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
                 }
             }
@@ -497,7 +497,7 @@ void Phi::CalcSource(ParamsHolder &params) {
 }
 
 
-void Phi::AddFlux(vector< vector < vector<float> > > addedflux) {
+void Phi::AddFlux(vector< vector < vector<float> > > &addedflux) {
     for(int i = 0; i < addedflux.size(); i++) {
         for(int j = 0; j < addedflux[i].size(); j++) {
             for(int k = 0; k < addedflux[i][j].size(); k++) {

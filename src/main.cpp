@@ -93,6 +93,14 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
         output << endl;
     }
 
+    output << endl << endl << "Inputs for the case: " << endl;
+    output << " Database folder: " << params.data_path << endl
+         << " Input file:      " << params.input_path << endl
+         << " Energy groups:   " << params.egroups << endl
+         << " F order:         " << params.f_order << endl
+         << " S order:         " << params.s_order << endl << endl;
+
+
     output.close();
 
     cout << "Completed writing results." << endl;
@@ -171,6 +179,11 @@ int main(int argc, char* argv[]) {
     // Builds the necessary parameters for each region
     params.BuildReg(isos);
 
+    cout <<"skernel: " << endl;
+    cout << params.region[0].skernel[0] << endl;
+    cout << params.region[1].skernel[0] << endl;
+
+
     // Build flux vector
     Phi phi1(params);
     Phi total(params);
@@ -178,6 +191,8 @@ int main(int argc, char* argv[]) {
     // First sweep using given source
     phi1.SweepLR(params);
     phi1.SweepRL(params);
+
+    //phi1.PrintFlux();
 
     total.AddFlux(phi1.flux);
 
