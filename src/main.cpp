@@ -32,7 +32,7 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
 
     output << "Transport code output file." << endl << endl;
 
-    output << "_____Total Flux_____" << endl;
+    output << "_____Total Flux(weights)_____" << endl;
     for(int i = 1; i < phi.tot; i+=2) {
         flux = 0;
         for(int g = 0; g < params.egroups; g++) {
@@ -43,13 +43,37 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
         output << phi.distance[i] << " " << flux << endl;
     }
 
-    output << endl << endl << "___Angle int. flux___" << endl;
+    output << endl << "_____Total Flux(no weights)_____" << endl;
+    for(int i = 1; i < phi.tot; i+=2) {
+        flux = 0;
+        for(int g = 0; g < params.egroups; g++) {
+            for(int n = 0; n < params.ordinates; n++) {
+                flux += phi.flux[i][n][g];
+            }
+        }
+        output << phi.distance[i] << " " << flux << endl;
+    }
+
+    output << endl << endl << "___Angle int. flux(weights)___" << endl;
     for(int i = 1; i < phi.tot; i+=2) {
         output << phi.distance[i];
         for(int g = 0; g < params.egroups; g++) {
             tot_flux[g] = 0;
             for(int n = 0; n < params.ordinates; n++) {
                 tot_flux[g] += phi.flux[i][n][g] * params.we[n] / 2;
+            }
+            output << " " << tot_flux[g];
+        }
+        output << endl;
+    }
+
+    output << endl << endl << "___Angle int. flux(no weights)___" << endl;
+    for(int i = 1; i < phi.tot; i+=2) {
+        output << phi.distance[i];
+        for(int g = 0; g < params.egroups; g++) {
+            tot_flux[g] = 0;
+            for(int n = 0; n < params.ordinates; n++) {
+                tot_flux[g] += phi.flux[i][n][g];
             }
             output << " " << tot_flux[g];
         }

@@ -150,7 +150,7 @@ void ParamsHolder::ReadIP() {
 
     string line;
     string name, name2;
-    float value;
+    float value, value2;
     unsigned int counter = 0;
     float tot_thickness = 0;
 
@@ -221,19 +221,31 @@ void ParamsHolder::ReadIP() {
                 while(getline(input, line), line[0] != 'X') {
                     // Read each line until the thickness (X)
 
+                    value = -1;
                     istringstream iss(line);
                     iss >> name >> value;
-
+                    if(value < 0) {
+                        cout << "Error parsing region " << counter << " thickness or source multiplier." << endl;
+                        exit(1);
+                    }
                     temp_region.NumDens[name] = value;
 
                 }
 
-                // Store the thickness value
+                // Store the thickness value and source multiplier
+                value = -1;
+                value2 = -1;
                 istringstream iss(line);
-                iss >> name >> value;
+                iss >> name >> value >> value2;
+
+                if(value < 0 || value2 < 0) {
+                    cout << "Error parsing region " << counter << " thickness or source multiplier." << endl;
+                    exit(1);
+                }
 
                 temp_region.thickness = value;
                 tot_thickness += value;
+                temp_region.s_multiplier = value2;
 
                 // Store delta
                 getline(input, line);
@@ -241,7 +253,7 @@ void ParamsHolder::ReadIP() {
                 iss2 >> name >> value;
 
                 if(name.compare("dx")) {
-                    cout << " Error parsing region " << counter << " thickness." << endl;
+                    cout << " Error parsing region " << counter << " mesh thickness." << endl;
                     exit(1);
                 } else {
                     temp_region.dx = value;
@@ -346,9 +358,9 @@ Phi::Phi(ParamsHolder &params) {
 
     // Initiate source
     source.resize(tot, init);
-    for(int i = 0; i < tot; i++) {
+    for(int i = 1; i < tot; i+=2) {
         for(int n = 0; n < params.ordinates; n++) {
-            source[i][n][0] = params.init_source * params.we[n] / 2.;
+            source[i][n][0] = params.init_source * params.we[n] / 2. * params.region[itoreg[i]].s_multiplier;
         }
     }
 

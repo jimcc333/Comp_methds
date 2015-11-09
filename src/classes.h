@@ -30,6 +30,7 @@ class RegionInfo {
 public:
     float thickness;
     float dx;
+    float s_multiplier;
     map<string,float> NumDens;
 
     vector<float> total;
