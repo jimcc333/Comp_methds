@@ -89,7 +89,7 @@ void IsoInfo::Read(string data_path) {
             }
         }
 
-        if(!line.compare("SKERNEL")) {
+        if(!line.compare(0,7,"SKERNEL")) {
             while(getline(input, line)) {
 
                 istringstream iss(line);
@@ -106,6 +106,8 @@ void IsoInfo::Read(string data_path) {
                 skernel[6](egroups - group, egroups - togroup) = value7;
                 skernel[7](egroups - group, egroups - togroup) = value8;
                 skernel[8](egroups - group, egroups - togroup) = value9;
+
+
 
             }
         }
@@ -315,7 +317,7 @@ void ParamsHolder::BuildReg(vector<IsoInfo> &isos) {
                 // For each isotope in isos
 
                     if(!isos[iso].name.compare(it->first + ".xs")){
-                        cout << isos[iso].name << " and " << isos[iso].skernel[o] << endl;
+                        //cout << isos[iso].name << " and skernel: " << endl << isos[iso].skernel[o] << endl;
                         region[r].skernel[o] += isos[iso].skernel[o] * it->second * 1E-24;
                     }
                 }

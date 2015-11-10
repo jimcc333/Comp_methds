@@ -172,6 +172,7 @@ int main(int argc, char* argv[]) {
         cout << "...Reading " << params.manifest[i] << " input file." << endl;
         IsoInfo temp_iso(params.egroups, params.f_order, params.s_order, params.manifest[i]);
         temp_iso.Read(params.data_path);
+        cout << "this just in: " << endl << temp_iso.skernel[0] << endl;
         isos.push_back(temp_iso);
     }
     cout << "..Database read." << endl;
