@@ -50,6 +50,8 @@ public:
     string input_path = "./Input/input.txt";
     string output_name = "output.txt";
     float conv_tol = 0.002;
+    float tot_source;
+    unsigned int tot_iter;
 
     // Problem objects
     vector<RegionInfo> region;

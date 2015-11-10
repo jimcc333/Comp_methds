@@ -224,7 +224,7 @@ void ParamsHolder::ReadIP() {
                     istringstream iss(line);
                     iss >> name >> value;
                     if(value < 0) {
-                        cout << "Error parsing region " << counter << " thickness or source multiplier." << endl;
+                        cout << "Error parsing region " << counter << " number density at line: " << line << endl;
                         exit(1);
                     }
                     temp_region.NumDens[name] = value;
@@ -238,7 +238,7 @@ void ParamsHolder::ReadIP() {
                 iss >> name >> value >> value2;
 
                 if(value < 0 || value2 < 0) {
-                    cout << "Error parsing region " << counter << " thickness or source multiplier." << endl;
+                    cout << "Error parsing region " << counter << " thickness or source multiplier. Line: " << line << endl;
                     exit(1);
                 }
 

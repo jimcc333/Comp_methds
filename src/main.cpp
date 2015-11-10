@@ -34,18 +34,20 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
 
     output << "Transport code output file." << endl << endl;
 
+    output << "Total source generations: " << params.tot_iter << endl;
+
     for(int g = 0; g < params.egroups; g++) {
         for(int n = 0; n < params.ordinates/2; n++) {
-            tot_right += phi.flux[phi.tot-2][n][g] * params.mu[n] / 2; // last mesh in half point
+            tot_right += phi.flux[phi.tot-2][n][g] * abs(params.mu[n]) / 2; // last mesh in half point
         }
 
         for(int n = params.ordinates/2; n < params.ordinates; n++) {
-            tot_left += phi.flux[1][n][g] * params.mu[n] / 2; // first mesh is half point
+            tot_left += phi.flux[1][n][g] * abs(params.mu[n]) / 2; // first mesh is half point
         }
     }
 
-    output << "Right leakage: " << tot_right << endl;
-    output << "Left leakage : " << tot_left << endl;
+    output << "Right leakage: " << tot_right << " neutrons, " << tot_right/params.tot_source*100 << "%" << endl;
+    output << "Left leakage : " << tot_left << " neutrons, " << tot_left/params.tot_source*100 << "%" << endl;
 
     output << endl << "_____Total Flux_____" << endl;
     output << "dist | flux" << endl;
@@ -54,6 +56,18 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
         for(int g = 0; g < params.egroups; g++) {
             for(int n = 0; n < params.ordinates; n++) {
                 flux += phi.flux[i][n][g];
+            }
+        }
+        output << phi.distance[i] << " " << flux << endl;
+    }
+
+    output << endl << "_____Absorption rate_____" << endl;
+    output << "dist | absorption" << endl;
+    for(int i = 1; i < phi.tot; i+=2) {
+        flux = 0;
+        for(int g = 0; g < params.egroups; g++) {
+            for(int n = 0; n < params.ordinates; n++) {
+                flux += phi.flux[i][n][g] * params.region[phi.itoreg[i]].total[g];
             }
         }
         output << phi.distance[i] << " " << flux << endl;
@@ -138,7 +152,7 @@ int main(int argc, char* argv[]) {
                 params.data_path = string(argv[++arg]);
             }
 
-            if(string(argv[arg]) == "ipath") {
+            if(string(argv[arg]) == "ipath" || string(argv[arg]) == "i") {
                 params.input_path = string(argv[++arg]);
             }
 
@@ -184,11 +198,20 @@ int main(int argc, char* argv[]) {
     Phi phi1(params);
     Phi total(params);
 
+    // Determine total source
+    params.tot_source = 0;
+    for(int i = 1; i < phi1.source.size(); i+=2) {
+        for(int j = 0; j < phi1.source[i].size(); j++) {
+            for(int k = 0; k < phi1.source[i][j].size(); k++) {
+                params.tot_source += phi1.source[i][j][k];
+            }
+        }
+    }
+    cout << "tot source: " << params.tot_source << endl;
+
     // First sweep using given source
     phi1.SweepLR(params);
     phi1.SweepRL(params);
-
-    //phi1.PrintFlux();
 
     total.AddFlux(phi1.flux);
 
@@ -207,6 +230,7 @@ int main(int argc, char* argv[]) {
         // Check convergence
         if(phi1.ConvCheck(total.flux, params.conv_tol)) {
             cout << endl << "Calculation complete after " << counter << " iterations!" << endl;
+            params.tot_iter = counter;
             counter = 500;
         }
         // Add to total
