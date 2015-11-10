@@ -27,23 +27,28 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
 
     float tot_flux[params.egroups];
     float flux = 0;
+    float tot_left = 0;
+    float tot_right = 0;
     ofstream output;
     output.open(params.output_name);
 
     output << "Transport code output file." << endl << endl;
 
-    output << "_____Total Flux(weights)_____" << endl;
-    for(int i = 1; i < phi.tot; i+=2) {
-        flux = 0;
-        for(int g = 0; g < params.egroups; g++) {
-            for(int n = 0; n < params.ordinates; n++) {
-                flux += phi.flux[i][n][g] * params.we[n] / 2;
-            }
+    for(int g = 0; g < params.egroups; g++) {
+        for(int n = 0; n < params.ordinates/2; n++) {
+            tot_right += phi.flux[phi.tot-2][n][g] * params.mu[n] / 2; // last mesh in half point
         }
-        output << phi.distance[i] << " " << flux << endl;
+
+        for(int n = params.ordinates/2; n < params.ordinates; n++) {
+            tot_left += phi.flux[1][n][g] * params.mu[n] / 2; // first mesh is half point
+        }
     }
 
-    output << endl << "_____Total Flux(no weights)_____" << endl;
+    output << "Right leakage: " << tot_right << endl;
+    output << "Left leakage : " << tot_left << endl;
+
+    output << endl << "_____Total Flux_____" << endl;
+    output << "dist | flux" << endl;
     for(int i = 1; i < phi.tot; i+=2) {
         flux = 0;
         for(int g = 0; g < params.egroups; g++) {
@@ -54,7 +59,8 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
         output << phi.distance[i] << " " << flux << endl;
     }
 
-    output << endl << endl << "___Angle int. flux(weights)___" << endl;
+    output << endl << endl << "___Angle int. flux___" << endl;
+    output << "dist | flux_g1 | flux_g2 | ..." << endl;
     for(int i = 1; i < phi.tot; i+=2) {
         output << phi.distance[i];
         for(int g = 0; g < params.egroups; g++) {
@@ -67,21 +73,8 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
         output << endl;
     }
 
-    output << endl << endl << "___Angle int. flux(no weights)___" << endl;
-    for(int i = 1; i < phi.tot; i+=2) {
-        output << phi.distance[i];
-        for(int g = 0; g < params.egroups; g++) {
-            tot_flux[g] = 0;
-            for(int n = 0; n < params.ordinates; n++) {
-                tot_flux[g] += phi.flux[i][n][g];
-            }
-            output << " " << tot_flux[g];
-        }
-        output << endl;
-    }
-
     output << endl << endl << "_____Psi_____" << endl;
-    output << "[distance]" << endl << "[ordinate X group]" << endl << endl;
+    output << "dist" << endl << "matrix[ordinate X group]" << endl << endl;
     for(int i = 1; i < phi.flux.size(); i+=2) {
         output << phi.distance[i] << endl;
         for(int n = 0; n < phi.flux[i].size(); n++) {
@@ -100,6 +93,14 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
          << " F order:         " << params.f_order << endl
          << " S order:         " << params.s_order << endl << endl;
 
+    for(int r = 0; r < params.region.size(); r++) {
+        output << "Region " << r+1 << ":" << endl;
+        output << "  Thickness: " << params.region[r].thickness << ". Isos and number densities:" << endl;
+
+        for(map<string, float>::const_iterator it = params.region[r].NumDens.begin(); it != params.region[r].NumDens.end(); ++it) {
+            output << "  " << it->first << " " << it->second << endl;
+        }
+    }
 
     output.close();
 
