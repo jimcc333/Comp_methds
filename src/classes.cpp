@@ -42,7 +42,7 @@ void IsoInfo::Read(string data_path) {
 
     while(getline(input, line)) {
 
-        if(!line.compare("TOTAL")) {
+        if(!line.compare(0,5,"TOTAL")) {
             while(getline(input, line), !line.empty()) {
 
                 istringstream iss(line);
@@ -52,8 +52,7 @@ void IsoInfo::Read(string data_path) {
             }
         }
 
-
-        if(!line.compare("FFACTOR")) {
+        if(!line.compare(0,7,"FFACTOR")) {
             while(getline(input, line), !line.empty()) {
 
                 istringstream iss(line);
@@ -69,7 +68,7 @@ void IsoInfo::Read(string data_path) {
             }
         }
 
-        if(!line.compare("CHI")) {
+        if(!line.compare(0,3,"CHI")) {
             while(getline(input, line), !line.empty()) {
 
                 istringstream iss(line);
@@ -79,7 +78,7 @@ void IsoInfo::Read(string data_path) {
             }
         }
 
-        if(!line.compare("NUFISSION")) {
+        if(!line.compare(0,9,"NUFISSION")) {
             while(getline(input, line), !line.empty()) {
 
                 istringstream iss(line);
@@ -91,7 +90,6 @@ void IsoInfo::Read(string data_path) {
 
         if(!line.compare(0,7,"SKERNEL")) {
             while(getline(input, line)) {
-
                 istringstream iss(line);
                 iss >> group >> togroup >> value1 >> value2 >> value3
                     >> value4 >> value5 >> value6 >> value7 >> value8 >> value9;
@@ -111,7 +109,6 @@ void IsoInfo::Read(string data_path) {
 
             }
         }
-
     }
 }
 

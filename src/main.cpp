@@ -172,18 +172,12 @@ int main(int argc, char* argv[]) {
         cout << "...Reading " << params.manifest[i] << " input file." << endl;
         IsoInfo temp_iso(params.egroups, params.f_order, params.s_order, params.manifest[i]);
         temp_iso.Read(params.data_path);
-        cout << "this just in: " << endl << temp_iso.skernel[0] << endl;
         isos.push_back(temp_iso);
     }
     cout << "..Database read." << endl;
 
     // Builds the necessary parameters for each region
     params.BuildReg(isos);
-
-    cout <<"skernel: " << endl;
-    cout << params.region[0].skernel[0] << endl;
-    cout << params.region[1].skernel[0] << endl;
-
 
     // Build flux vector
     Phi phi1(params);
