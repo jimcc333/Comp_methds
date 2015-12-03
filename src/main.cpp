@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <chrono>
+#include <boost/thread.hpp>
 
 #include "classes.cpp"
 
