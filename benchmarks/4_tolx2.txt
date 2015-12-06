@@ -5,7 +5,7 @@ b10.xs
 
 ordinates 8
 source 1e10
-output 4_tolx2_out
+output delete_benchmarking_outputlx2_out
 tolerance 0.01
 
 Region
