@@ -246,13 +246,13 @@ int main(int argc, char* argv[]) {
             for(unsigned int n = 0; n < params.ordinates/2; n++) {
             // For RL ordinate n
                 //LRSweeper(phi1.flux[g][n], phi1.source[g][n], params, phi1.itoreg, n, g);
-                threads.create_thread(boost::bind(&LRSweeper, boost::ref(phi1.flux[g][n]), phi1.source[g][n],
+                threads.add_thread(new boost::thread(&LRSweeper, boost::ref(phi1.flux[g][n]), boost::ref(phi1.source[g][n]),
                                                   params, phi1.itoreg, n, g));
             }
             for(unsigned int n = params.ordinates/2; n < params.ordinates; n++) {
             // For LR ordinate n
                 //RLSweeper(phi1.flux[g][n], phi1.source[g][n], params, phi1.itoreg, n, g);
-                threads.create_thread(boost::bind(&RLSweeper, boost::ref(phi1.flux[g][n]), phi1.source[g][n],
+                threads.add_thread(new boost::thread(&RLSweeper, boost::ref(phi1.flux[g][n]), boost::ref(phi1.source[g][n]),
                                                   params, phi1.itoreg, n, g));
             }
         }
@@ -272,26 +272,8 @@ int main(int argc, char* argv[]) {
     cout << "Generating output file " << params.output_name << endl;
     OutputGen(total, params);
 
-/**
-    std::vector<float> data1 (10000000, 3.141592);
-    std::vector<float> data2 (10000000, 3.141592);
-    std::vector<float> data3 (10000000, 3.141592);
-    std::vector<float> data4 (10000000, 3.141592);
-    std::vector<float> data5 (10000000, 3.141592);
-
-    boost::thread_group threads;
-
-    threads.create_thread(boost::bind(&WorkerFunction, data1));
-    threads.create_thread(boost::bind(&WorkerFunction, data2));
-    threads.create_thread(boost::bind(&WorkerFunction, data3));
-    threads.create_thread(boost::bind(&WorkerFunction, data4));
-    threads.create_thread(boost::bind(&WorkerFunction, data5));
-
-    threads.join_all();
-**/
     return 0;
 }
-
 
 void LRSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
                const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g) {
