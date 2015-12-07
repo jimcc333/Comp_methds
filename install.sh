@@ -14,7 +14,7 @@ echo
 echo 'Removing old buid'
 rm -f ./transport
 echo 'Starting build'
-g++ -o transport src/main.cpp -std=c++11 -lboost_system || { 
+g++ -o transport src/main.cpp -std=c++11 -lboost_system -lboost_thread || { 
 echo "----- Build failed -----"
 exit
 }

@@ -20,6 +20,15 @@ isos:   isotope database vector
 
 ***/
 
+void WorkerFunction(std::vector<float> &data) {
+    std::cout << "Starting thread" << std::endl;
+    for(int i = 1; i < data.size()-1; i+=2) {
+        data[i] = 1.001 * data[i-1];
+        data[i+1] = data[i]*0.5 + data[i-1]*0.5;
+    }
+    std::cout << "Completed thread" << std::endl;
+}
+
 void OutputGen(Phi &phi, ParamsHolder &params) {
     ifstream infile(params.output_name);
     if(infile.good()) {
@@ -225,6 +234,7 @@ int main(int argc, char* argv[]) {
 
         // Calculate new source
         phi1.CalcSource(params);
+
         // Sweep
         phi1.SweepLR(params);
         phi1.SweepRL(params);
@@ -241,6 +251,23 @@ int main(int argc, char* argv[]) {
     cout << "Generating output file " << params.output_name << endl;
     OutputGen(total, params);
 
+/**
+    std::vector<float> data1 (10000000, 3.141592);
+    std::vector<float> data2 (10000000, 3.141592);
+    std::vector<float> data3 (10000000, 3.141592);
+    std::vector<float> data4 (10000000, 3.141592);
+    std::vector<float> data5 (10000000, 3.141592);
+
+    boost::thread_group threads;
+
+    threads.create_thread(boost::bind(&WorkerFunction, data1));
+    threads.create_thread(boost::bind(&WorkerFunction, data2));
+    threads.create_thread(boost::bind(&WorkerFunction, data3));
+    threads.create_thread(boost::bind(&WorkerFunction, data4));
+    threads.create_thread(boost::bind(&WorkerFunction, data5));
+
+    threads.join_all();
+**/
     return 0;
 }
 
