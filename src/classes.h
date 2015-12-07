@@ -93,10 +93,10 @@ public:
 
     unsigned int tot;
 
-    vector< vector < vector<float> > > flux; // [mesh][ordinate][energy]
+    vector< vector < vector<float> > > flux; // [energy][ordinate][mesh]
     vector<float> distance;         // mesh-to-distance mapper
     vector<unsigned int> itoreg;    // mesh-to-region mapper, region indexed from zero
-    vector< vector < vector<float> > > source; // [mesh][ordinate][energy]
+    vector< vector < vector<float> > > source; // [energy][ordinate][mesh]
 
     void PrintFlux();
     void PrintFlux(unsigned int ordinate, unsigned int group);
@@ -108,7 +108,10 @@ public:
     bool ConvCheck(vector< vector < vector<float> > > &total, float tolerance);
 };
 
-
+void LRSweeper(vector<float> &flux, vector<float> &source, ParamsHolder &params,
+               vector<unsigned int> &itoreg, unsigned int n, unsigned int g);
+void RLSweeper(vector<float> &flux, vector<float> &source, ParamsHolder &params,
+               vector<unsigned int> &itoreg, unsigned int n, unsigned int g);
 
 
 

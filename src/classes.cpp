@@ -325,8 +325,6 @@ void ParamsHolder::BuildReg(vector<IsoInfo> &isos) {
 
 
 Phi::Phi(ParamsHolder &params) {
-    // Create empty ordinate and energy flux to push, all values zero
-    const vector< vector<float> > init(params.ordinates, vector<float>(params.egroups, 0));
 
     // Determine number of mesh points
     unsigned int tot_mesh = 0;
@@ -334,10 +332,9 @@ Phi::Phi(ParamsHolder &params) {
 
     //  First point is at distance zero
     distance.push_back(0);
-    flux.push_back(init);
     itoreg.push_back(0);
 
-    // Goes through each region to initiate phi and distance
+    // Goes through each region to initiate distance
     for(int r = 0; r < params.region.size(); r++) {
         reg_mesh = floor(params.region[r].thickness / params.region[r].dx);
         reg_mesh *= 2; // To include half-points
@@ -346,7 +343,6 @@ Phi::Phi(ParamsHolder &params) {
         const unsigned int start = distance.size();
 
         distance.resize(distance.size() + reg_mesh);
-        flux.resize(flux.size() + reg_mesh, init);
         itoreg.resize(itoreg.size() + reg_mesh, r);
 
         for(int i = start; i < reg_mesh + start; i++) {
@@ -355,11 +351,17 @@ Phi::Phi(ParamsHolder &params) {
     }
     tot = distance.size();
 
+    // Create empty ordinate and mesh flux to push, all values zero
+    const vector< vector<float> > init(params.ordinates, vector<float>(tot, 0));
+
+    //.push_back(init);
+    flux.resize(params.egroups, init);
+
     // Initiate source
-    source.resize(tot, init);
+    source.resize(params.egroups, init);
     for(int i = 1; i < tot; i+=2) {
         for(int n = 0; n < params.ordinates; n++) {
-            source[i][n][0] = params.init_source * params.we[n] / 2. * params.region[itoreg[i]].s_multiplier;
+            source[0][n][i] = params.init_source * params.we[n] / 2. * params.region[itoreg[i]].s_multiplier;
         }
     }
 
@@ -377,8 +379,8 @@ void Phi::PrintFlux() {
         for(unsigned int n = 0; n < flux[0].size(); n++) {
         // For right-pointed ordinate n
 
-            for(unsigned int g = 0; g < flux[0][0].size(); g++) {
-                    cout << flux[i][n][g] << " ";
+            for(unsigned int g = 0; g < flux.size(); g++) {
+                    cout << flux[g][n][i] << " ";
             }
             cout << endl;
         }
@@ -388,7 +390,7 @@ void Phi::PrintFlux() {
 void Phi::PrintFlux(unsigned int ordinate, unsigned int group) {
     cout << "Flux of ordinate " << ordinate << " and group " << group << ":" << endl;
     for(unsigned int i = 0; i < tot; i++) {
-        cout << flux[i][ordinate][group] << endl;
+        cout << flux[group][ordinate][i] << endl;
     }
 }
 
@@ -401,7 +403,7 @@ void Phi::PrintSource() {
         // For right-pointed ordinate n
 
             for(unsigned int g = 0; g < flux[0][0].size(); g++) {
-                    cout << source[i][n][g] << " ";
+                    cout << source[g][n][i] << " ";
             }
             cout << endl;
         }
@@ -420,10 +422,10 @@ void Phi::SweepLR(ParamsHolder &params) {
             for(unsigned int g = 0; g < params.egroups; g++) {
             // For group g
                 if(i%2 == 0) {
-                    flux[i][n][g] = 2.*flux[i-1][n][g] - flux[i-2][n][g];
+                    flux[g][n][i] = 2.*flux[g][n][i-1] - flux[g][n][i-2];
                 } else {
                 ///todo check source being multiplied by delta
-                    flux[i][n][g] = (params.region[itoreg[i]].dx * source[i][n][g] + 2.*params.mu[n]*flux[i-1][n][g])
+                    flux[g][n][i] = (params.region[itoreg[i]].dx * source[g][n][i] + 2.*params.mu[n]*flux[g][n][i-1])
                                     / (2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
                 }
             }
@@ -443,10 +445,10 @@ void Phi::SweepRL(ParamsHolder &params) {
             for(unsigned int g = 0; g < params.egroups; g++) {
             // For group g
                 if(i%2 == 0) {
-                    flux[i][n][g] = 2.*flux[i+1][n][g] - flux[i+2][n][g];
+                    flux[g][n][i] = 2.*flux[g][n][i+1] - flux[g][n][i+2];
                 } else {
                 ///todo check source being multiplied by delta
-                    flux[i][n][g] = (params.region[itoreg[i]].dx * source[i][n][g] - 2.*params.mu[n]*flux[i+1][n][g])
+                    flux[g][n][i] = (params.region[itoreg[i]].dx * source[g][n][i] - 2.*params.mu[n]*flux[g][n][i+1])
                                     / (-2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
                 }
             }
@@ -477,7 +479,7 @@ void Phi::CalcSource(ParamsHolder &params) {
 
                         for(unsigned int p = 0; p < params.ordinates; p++) {
                         // For flux ordinate p
-                            inner += params.we[p] * params.leg[p][l] * flux[i][p][k];
+                            inner += params.we[p] * params.leg[p][l] * flux[k][p][i];
                         }
 
                         middle += inner * params.region[itoreg[i]].skernel[l](k,g);
@@ -488,7 +490,7 @@ void Phi::CalcSource(ParamsHolder &params) {
                     middle = 0;
                 }
 
-                source[i][n][g] = 0.5 * outer;
+                source[g][n][i] = 0.5 * outer;
                 outer = 0;
             }
         }
@@ -497,10 +499,10 @@ void Phi::CalcSource(ParamsHolder &params) {
 
 
 void Phi::AddFlux(vector< vector < vector<float> > > &addedflux) {
-    for(int i = 0; i < addedflux.size(); i++) {
-        for(int j = 0; j < addedflux[i].size(); j++) {
-            for(int k = 0; k < addedflux[i][j].size(); k++) {
-                flux[i][j][k] += addedflux[i][j][k];
+    for(int g = 0; g < addedflux.size(); g++) {
+        for(int n = 0; n < addedflux[g].size(); n++) {
+            for(int i = 0; i < addedflux[g][n].size(); i++) {
+                flux[g][n][i] += addedflux[g][n][i];
             }
         }
     }
@@ -508,20 +510,10 @@ void Phi::AddFlux(vector< vector < vector<float> > > &addedflux) {
 
 // Returns true if converged
 bool Phi::ConvCheck(vector< vector < vector<float> > > &total, float tolerance) {
-    for(int i = 1; i < total.size(); i+=2) {
-        for(int j = 0; j < total[i].size(); j++) {
-            for(int k = total[i][j].size() - 1; k > 0; k--) {
-                if(total[i][j][k] != 0 && (flux[i][j][k] / total[i][j][k]) > tolerance){
-                    return false;
-                }
-            }
-        }
-    }
-
-    for(int i = 0; i < total.size(); i+=2) {
-        for(int j = 0; j < total[i].size(); j++) {
-            for(int k = total[i][j].size() - 1; k > 0; k--) {
-                if( (flux[i][j][k] / total[i][j][k]) > tolerance){
+    for(int g = 0; g < total.size(); g++) {
+        for(int n = 0; n < total[g].size(); n++) {
+            for(int i = 0; i < total[g][n].size(); i++) {
+                if(total[g][n][i] != 0 && (flux[g][n][i] / total[g][n][i]) > tolerance){
                     return false;
                 }
             }
@@ -530,8 +522,31 @@ bool Phi::ConvCheck(vector< vector < vector<float> > > &total, float tolerance) 
     return true;
 }
 
+void LRSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
+               const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g) {
+    const int f_size = flux.size();
 
+    for(unsigned int i = 1; i < f_size; i += 2) {
+        flux[i] = (params.region[itoreg[i]].dx * source[i] + 2.*params.mu[n]*flux[i-1])
+                                    / (2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
+        flux[i+1] = 2.*flux[i] - flux[i-1];
+    }
 
+    return;
+}
+
+void RLSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
+               const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g) {
+    const int f_size = flux.size();
+
+    for(unsigned int i = f_size-2; i >= 0; i -= 2) {
+        flux[i+1] = 2.*flux[i] - flux[i-1];
+        flux[i] = (params.region[itoreg[i]].dx * source[i] - 2.*params.mu[n]*flux[i+1])
+                                    / (-2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
+    }
+
+    return;
+}
 
 
 

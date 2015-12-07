@@ -48,11 +48,11 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
 
     for(int g = 0; g < params.egroups; g++) {
         for(int n = 0; n < params.ordinates/2; n++) {
-            tot_right += phi.flux[phi.tot-2][n][g] * abs(params.mu[n]) / 2; // last mesh in half point
+            tot_right += phi.flux[g][n][phi.tot-2] * abs(params.mu[n]) / 2; // last mesh in half point
         }
 
         for(int n = params.ordinates/2; n < params.ordinates; n++) {
-            tot_left += phi.flux[1][n][g] * abs(params.mu[n]) / 2; // first mesh is half point
+            tot_left += phi.flux[g][n][1] * abs(params.mu[n]) / 2; // first mesh is half point
         }
     }
 
@@ -65,7 +65,7 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
         flux = 0;
         for(int g = 0; g < params.egroups; g++) {
             for(int n = 0; n < params.ordinates; n++) {
-                flux += phi.flux[i][n][g];
+                flux += phi.flux[g][n][i];
             }
         }
         output << phi.distance[i] << " " << flux << endl;
@@ -77,7 +77,7 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
         flux = 0;
         for(int g = 0; g < params.egroups; g++) {
             for(int n = 0; n < params.ordinates; n++) {
-                flux += phi.flux[i][n][g] * params.region[phi.itoreg[i]].total[g];
+                flux += phi.flux[g][n][i] * params.region[phi.itoreg[i]].total[g];
             }
         }
         output << phi.distance[i] << " " << flux << endl;
@@ -90,7 +90,7 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
         for(int g = 0; g < params.egroups; g++) {
             tot_flux[g] = 0;
             for(int n = 0; n < params.ordinates; n++) {
-                tot_flux[g] += phi.flux[i][n][g] * params.we[n] / 2;
+                tot_flux[g] += phi.flux[g][n][i] * params.we[n] / 2;
             }
             output << " " << tot_flux[g];
         }
@@ -98,12 +98,13 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
     }
 
     output << endl << endl << "_____Psi_____" << endl;
-    output << "dist" << endl << "matrix[ordinate X group]" << endl << endl;
-    for(int i = 1; i < phi.flux.size(); i+=2) {
+    output << "dist" << endl << "matrix[group X ordinate]" << endl << endl;
+    for(int i = 1; i < phi.tot; i+=2) {
         output << phi.distance[i] << endl;
-        for(int n = 0; n < phi.flux[i].size(); n++) {
-            for(int g = 0; g < phi.flux[i][n].size(); g++) {
-                output << phi.flux[i][n][g] << " ";
+        for(int g = 0; g < params.egroups; g++) {
+            tot_flux[g] = 0;
+            for(int n = 0; n < params.ordinates; n++) {
+                output << phi.flux[g][n][i] << " ";
             }
             output << endl;
         }
@@ -137,7 +138,6 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
 int main(int argc, char* argv[]) {
     // Defaults
     ParamsHolder params;
-
 
     // Handle console inputs
     if(argc == 1) {
@@ -210,10 +210,11 @@ int main(int argc, char* argv[]) {
 
     // Determine total source
     params.tot_source = 0;
-    for(int i = 1; i < phi1.source.size(); i+=2) {
+    for(int i = 0; i < phi1.source.size(); i++) {
         for(int j = 0; j < phi1.source[i].size(); j++) {
-            for(int k = 0; k < phi1.source[i][j].size(); k++) {
+            for(int k = 1; k < phi1.source[i][j].size(); k+=2) {
                 params.tot_source += phi1.source[i][j][k];
+                //cout << phi1.source[i][j][k] << endl;
             }
         }
     }
@@ -238,6 +239,22 @@ int main(int argc, char* argv[]) {
         // Sweep
         phi1.SweepLR(params);
         phi1.SweepRL(params);
+        /*
+        for(unsigned int g = 0; g < params.egroups; g++) {
+            // For energy group g
+
+            for(unsigned int n = 0; n < params.ordinates/2; n++) {
+            // For RL ordinate n
+                RLSweeper(flux)
+
+            }
+            for(unsigned int n = params.ordinates/2; n < params.ordinates; n++) {
+            // For LR ordinate n
+
+
+            }
+        }*/
+
         // Check convergence
         if(phi1.ConvCheck(total.flux, params.conv_tol)) {
             cout << endl << "Calculation complete after " << counter << " iterations!" << endl;
