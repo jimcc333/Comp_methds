@@ -108,10 +108,6 @@ public:
     bool ConvCheck(vector< vector < vector<float> > > &total, float tolerance);
 };
 
-void LRSweeper(vector<float> &flux, vector<float> &source, ParamsHolder &params,
-               vector<unsigned int> &itoreg, unsigned int n, unsigned int g);
-void RLSweeper(vector<float> &flux, vector<float> &source, ParamsHolder &params,
-               vector<unsigned int> &itoreg, unsigned int n, unsigned int g);
 
 
 

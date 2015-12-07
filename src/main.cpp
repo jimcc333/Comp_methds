@@ -20,14 +20,12 @@ isos:   isotope database vector
 
 ***/
 
-void WorkerFunction(std::vector<float> &data) {
-    std::cout << "Starting thread" << std::endl;
-    for(int i = 1; i < data.size()-1; i+=2) {
-        data[i] = 1.001 * data[i-1];
-        data[i+1] = data[i]*0.5 + data[i-1]*0.5;
-    }
-    std::cout << "Completed thread" << std::endl;
-}
+// Following functions implemented below
+void LRSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
+               const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g);
+void RLSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
+               const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g);
+
 
 void OutputGen(Phi &phi, ParamsHolder &params) {
     ifstream infile(params.output_name);
@@ -218,7 +216,7 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-    cout << "tot source: " << params.tot_source << endl;
+    cout << " Total source: " << params.tot_source << endl;
 
     // First sweep using given source
     phi1.SweepLR(params);
@@ -237,23 +235,21 @@ int main(int argc, char* argv[]) {
         phi1.CalcSource(params);
 
         // Sweep
-        phi1.SweepLR(params);
-        phi1.SweepRL(params);
-        /*
+        //phi1.SweepLR(params);
+        //phi1.SweepRL(params);
+
         for(unsigned int g = 0; g < params.egroups; g++) {
             // For energy group g
 
             for(unsigned int n = 0; n < params.ordinates/2; n++) {
             // For RL ordinate n
-                RLSweeper(flux)
-
+                LRSweeper(phi1.flux[g][n], phi1.source[g][n], params, phi1.itoreg, n, g);
             }
             for(unsigned int n = params.ordinates/2; n < params.ordinates; n++) {
             // For LR ordinate n
-
-
+                RLSweeper(phi1.flux[g][n], phi1.source[g][n], params, phi1.itoreg, n, g);
             }
-        }*/
+        }
 
         // Check convergence
         if(phi1.ConvCheck(total.flux, params.conv_tol)) {
@@ -289,6 +285,32 @@ int main(int argc, char* argv[]) {
 }
 
 
+void LRSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
+               const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g) {
+    const int f_size = flux.size();
+
+    for(unsigned int i = 1; i < f_size; i += 2) {
+        flux[i] = (params.region[itoreg[i]].dx * source[i] + 2.*params.mu[n]*flux[i-1])
+                                    / (2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
+        flux[i+1] = 2.*flux[i] - flux[i-1];
+    }
+
+    return;
+}
+
+void RLSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
+               const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g) {
+    const int f_size = flux.size();
+
+    for(unsigned int i = f_size-1; i > 0; i -= 2) {
+        flux[i-1] = (params.region[itoreg[i-1]].dx * source[i-1] - 2.*params.mu[n]*flux[i])
+                        / (-2.*params.mu[n] + params.region[itoreg[i-1]].dx*params.region[itoreg[i-1]].total[g]);
+
+        flux[i-2] = 2.*flux[i-1] - flux[i];
+    }
+
+    return;
+}
 
 
 

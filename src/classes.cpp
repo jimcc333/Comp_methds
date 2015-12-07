@@ -522,31 +522,6 @@ bool Phi::ConvCheck(vector< vector < vector<float> > > &total, float tolerance) 
     return true;
 }
 
-void LRSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
-               const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g) {
-    const int f_size = flux.size();
-
-    for(unsigned int i = 1; i < f_size; i += 2) {
-        flux[i] = (params.region[itoreg[i]].dx * source[i] + 2.*params.mu[n]*flux[i-1])
-                                    / (2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
-        flux[i+1] = 2.*flux[i] - flux[i-1];
-    }
-
-    return;
-}
-
-void RLSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
-               const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g) {
-    const int f_size = flux.size();
-
-    for(unsigned int i = f_size-2; i >= 0; i -= 2) {
-        flux[i+1] = 2.*flux[i] - flux[i-1];
-        flux[i] = (params.region[itoreg[i]].dx * source[i] - 2.*params.mu[n]*flux[i+1])
-                                    / (-2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
-    }
-
-    return;
-}
 
 
 
