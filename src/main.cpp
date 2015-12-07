@@ -238,18 +238,26 @@ int main(int argc, char* argv[]) {
         //phi1.SweepLR(params);
         //phi1.SweepRL(params);
 
+        boost::thread_group threads;
+
         for(unsigned int g = 0; g < params.egroups; g++) {
             // For energy group g
 
             for(unsigned int n = 0; n < params.ordinates/2; n++) {
             // For RL ordinate n
-                LRSweeper(phi1.flux[g][n], phi1.source[g][n], params, phi1.itoreg, n, g);
+                //LRSweeper(phi1.flux[g][n], phi1.source[g][n], params, phi1.itoreg, n, g);
+                threads.create_thread(boost::bind(&LRSweeper, boost::ref(phi1.flux[g][n]), phi1.source[g][n],
+                                                  params, phi1.itoreg, n, g));
             }
             for(unsigned int n = params.ordinates/2; n < params.ordinates; n++) {
             // For LR ordinate n
-                RLSweeper(phi1.flux[g][n], phi1.source[g][n], params, phi1.itoreg, n, g);
+                //RLSweeper(phi1.flux[g][n], phi1.source[g][n], params, phi1.itoreg, n, g);
+                threads.create_thread(boost::bind(&RLSweeper, boost::ref(phi1.flux[g][n]), phi1.source[g][n],
+                                                  params, phi1.itoreg, n, g));
             }
         }
+
+        threads.join_all();
 
         // Check convergence
         if(phi1.ConvCheck(total.flux, params.conv_tol)) {
