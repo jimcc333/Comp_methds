@@ -130,6 +130,18 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
 }
 
 int main(int argc, char* argv[]) {
+    cout << "  _Cem's Super-Awesome Transport Code_" << endl << endl;
+    cout << "    .---------------------------." << endl;
+    cout << "   /,--..---..---..---..---..--. `." << endl;
+    cout << "  //___||___||___||___||___||___\\_|" << endl;
+    cout << "  [j__ ######################## [_|" << endl;
+    cout << "     \\============================|" << endl;
+    cout << "  .==|  |'''||'''||'''||'''| |'''||" << endl;
+    cout << " /======'---''---''---''---'=|  =||" << endl;
+    cout << " |____    TRANSPORT    ____  | ==||" << endl;
+    cout << " //  \\\\         BUS   //  \\\\ |===||" << endl;
+    cout << " \\\\__//---------------\\\\__//-+---+'" << endl << endl;
+
     // Defaults
     ParamsHolder params;
 
