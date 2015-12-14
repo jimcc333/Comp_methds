@@ -20,7 +20,7 @@ isos:   isotope database vector
 
 ***/
 
-// Following functions implemented below
+// Functions implemented below
 void LRSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
                const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g);
 void RLSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
@@ -206,6 +206,8 @@ int main(int argc, char* argv[]) {
     Phi phi1(params);
     Phi total(params);
 
+cout << "size: " << phi1.flux[0][0].size() << endl;
+
     // Determine total source
     params.tot_source = 0;
     for(int i = 0; i < phi1.source.size(); i++) {
@@ -240,6 +242,13 @@ int main(int argc, char* argv[]) {
 
         boost::thread_group threads;
 
+        threads.create_thread(boost::bind(&Phi::SweepLR, boost::ref(phi1), params));
+        threads.create_thread(boost::bind(&Phi::SweepRL, boost::ref(phi1), params));
+        threads.join_all();
+
+/*
+        boost::thread_group threads;
+
         for(unsigned int g = 0; g < params.egroups; g++) {
             // For energy group g
 
@@ -258,7 +267,7 @@ int main(int argc, char* argv[]) {
         }
 
         threads.join_all();
-
+*/
         // Check convergence
         if(phi1.ConvCheck(total.flux, params.conv_tol)) {
             cout << endl << "Calculation complete after " << counter << " iterations!" << endl;
@@ -303,6 +312,32 @@ void RLSweeper(vector<float> &flux, const vector<float> &source, const ParamsHol
 }
 
 
+void GroupLRSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
+               const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g) {
+    const int f_size = flux.size();
+
+    for(unsigned int i = 1; i < f_size; i += 2) {
+        flux[i] = (params.region[itoreg[i]].dx * source[i] + 2.*params.mu[n]*flux[i-1])
+                                    / (2.*params.mu[n] + params.region[itoreg[i]].dx*params.region[itoreg[i]].total[g]);
+        flux[i+1] = 2.*flux[i] - flux[i-1];
+    }
+
+    return;
+}
+
+void GroupRLSweeper(vector<float> &flux, const vector<float> &source, const ParamsHolder &params,
+               const vector<unsigned int> &itoreg, const unsigned int n, const unsigned int g) {
+    const int f_size = flux.size();
+
+    for(unsigned int i = f_size-1; i > 0; i -= 2) {
+        flux[i-1] = (params.region[itoreg[i-1]].dx * source[i-1] - 2.*params.mu[n]*flux[i])
+                        / (-2.*params.mu[n] + params.region[itoreg[i-1]].dx*params.region[itoreg[i-1]].total[g]);
+
+        flux[i-2] = 2.*flux[i-1] - flux[i];
+    }
+
+    return;
+}
 
 
 

@@ -6,36 +6,49 @@ b10.xs
 ordinates 8
 source 1e10
 output delete_benchmarking_output
-tolerance 0.0005
+tolerance 0.005
 
 Region
 h1 3.35e22
 o16 1.67e22
 X 4 0
-dx 0.05
+dx 0.005
 
 Region
 h1 3.35e22
 o16 1.67e22
 b10 2.00e21
 X 2 1
-dx 0.015
+dx 0.0015
 
 Region
 h1 3.35e22
 o16 1.67e22
 X 3 0
-dx 0.05
+dx 0.005
 
 Region
 h1 3.35e22
 o16 1.67e22
 b10 2.00e21
 X 2 1
-dx 0.015
+dx 0.0015
 
 Region
 h1 3.35e22
 o16 1.67e22
 X 3 0
-dx 0.05
+dx 0.005
+
+Region
+h1 3.35e22
+o16 1.67e22
+b10 2.00e21
+X 2 1
+dx 0.0015
+
+Region
+h1 3.35e22
+o16 1.67e22
+X 4 0
+dx 0.005
