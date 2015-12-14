@@ -510,7 +510,8 @@ void Phi::AddFlux(vector< vector < vector<float> > > &addedflux) {
 bool Phi::ConvCheck(vector< vector < vector<float> > > &total, float tolerance) {
     for(int i = 1; i < total.size(); i+=2) {
         for(int j = 0; j < total[i].size(); j++) {
-            for(int k = total[i][j].size() - 1; k > 0; k--) {
+            for(int k = total[i][j].size() - 1; k >= 0; k--) {
+                //cout << "flux: " << flux[i][j][k] << " tot: " << total[i][j][k] << endl;
                 if(total[i][j][k] != 0 && (flux[i][j][k] / total[i][j][k]) > tolerance){
                     return false;
                 }
@@ -521,6 +522,7 @@ bool Phi::ConvCheck(vector< vector < vector<float> > > &total, float tolerance) 
     for(int i = 0; i < total.size(); i+=2) {
         for(int j = 0; j < total[i].size(); j++) {
             for(int k = total[i][j].size() - 1; k > 0; k--) {
+                //cout << "flux: " << flux[i][j][k] << " tot: " << total[i][j][k] << endl;
                 if( (flux[i][j][k] / total[i][j][k]) > tolerance){
                     return false;
                 }

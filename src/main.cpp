@@ -22,7 +22,7 @@ isos:   isotope database vector
 
 
 void ThreadFunc(vector< vector < vector<float> > > &flux, vector< vector < vector<float> > > &source,
-                ParamsHolder params, vector< vector < vector<float> > > &total, vector<unsigned int> itoreg);
+                ParamsHolder params, vector<unsigned int> &itoreg);
 
 void OutputGen(Phi &phi, ParamsHolder &params) {
     ifstream infile(params.output_name);
@@ -226,7 +226,7 @@ int main(int argc, char* argv[]) {
     phi1.SweepLR(params);
     phi1.SweepRL(params);
 
-    //total.AddFlux(phi1.flux);
+    total.AddFlux(phi1.flux);
 
     unsigned int counter;
     cout << "Starting solution..." << endl;
@@ -234,11 +234,11 @@ int main(int argc, char* argv[]) {
     cout << "..Mesh points: " << phi1.flux.size() << endl;
 
     // Generate thread flux vectors
-    vector< vector< vector < vector<float> > > > t_flux, t_source, t_total; // [thread][mesh][ordinate][energy]
+    vector< vector< vector < vector<float> > > > t_flux, t_source; // [thread][mesh][ordinate][energy]
     vector < vector<unsigned int> > t_itoreg;
 
     int mesh_size = floor(phi1.flux.size()/params.threads);
-    if(mesh_size/2 != 0) {mesh_size--;}
+    if(mesh_size/2 != 0) {mesh_size--;} // Make sure its even
 
     for(int thread = 0; thread < params.threads - 1; thread++) {
         vector< vector < vector<float> > >::iterator it1 = phi1.flux.begin() + mesh_size*thread;
@@ -246,7 +246,6 @@ int main(int argc, char* argv[]) {
         vector< vector < vector<float> > > temp_flux(it1, it2);
         t_flux.push_back(temp_flux);
         t_source.push_back(temp_flux);
-        t_total.push_back(temp_flux);
 
         vector<unsigned int>::iterator it3 = phi1.itoreg.begin() + mesh_size*thread;
         vector<unsigned int>::iterator it4 = phi1.itoreg.begin() + mesh_size*(thread+1);
@@ -258,14 +257,11 @@ int main(int argc, char* argv[]) {
     vector< vector < vector<float> > > temp_flux(it1, it2);
     t_flux.push_back(temp_flux);
     t_source.push_back(temp_flux);
-    t_total.push_back(temp_flux);
 
     vector<unsigned int>::iterator it3 = phi1.itoreg.begin() + mesh_size*(params.threads-1);
     vector<unsigned int>::iterator it4 = phi1.itoreg.end();
     vector<unsigned int> temp_itoreg(it3, it4);
     t_itoreg.push_back(temp_itoreg);
-
-    cout << "t size: " << t_flux[0].size() << endl;
 
     // Start iteration
     for(counter = 0; counter < 200; counter++) {
@@ -273,15 +269,7 @@ int main(int argc, char* argv[]) {
         cout << "Iteration: " << counter << "\r";
         cout.flush();
 
-
-        // Run in parallel
-        boost::thread_group threads;
-        for(int thread = 0; thread < params.threads; thread++) {
-            threads.create_thread(boost::bind(&ThreadFunc, boost::ref(t_flux[thread]), boost::ref(t_source[thread]),
-                                          params, boost::ref(t_total[thread]), boost::ref(t_itoreg[thread])));
-        }// calculated source and total threads
-
-        // Update from threads
+        // Update thread fluxes
         unsigned int thread = 0;
         unsigned int next = t_flux[0].size();
         unsigned int subtr = 0;
@@ -293,16 +281,48 @@ int main(int argc, char* argv[]) {
             }
             for(unsigned int n = 0; n < phi1.flux[0].size(); n++) {
                 for(unsigned int g = 0; g < 1; g++) {
-                    cout << "thread: " << thread+1 << " mesh: " << i << " subtr: " << subtr << " thread_i: " << i-subtr << " next: " << next << endl;
-                    phi1.source[i][n][g] = t_source[thread][i-subtr][n][g];
-                    total.flux[i][n][g] += t_flux[thread][i-subtr][n][g];
+                    //cout << "thread: " << thread+1 << " mesh: " << i << " subtr: " << subtr << " thread_i: " << i-subtr << " next: " << next << endl;
+                    t_flux[thread][i-subtr][n][g] = phi1.flux[i][n][g];
                 }
             }
         }
 
+        // Run in parallel to calculate source
+        boost::thread_group threads;
+        for(int thread = 0; thread < params.threads; thread++) {
+            threads.create_thread(boost::bind(&ThreadFunc, boost::ref(t_flux[thread]), boost::ref(t_source[thread]),
+                                          params, boost::ref(t_itoreg[thread])));
+        }
+
+        threads.join_all(); // calculated source and total threads
+
+        // Update source from thread source
+        thread = 0;
+        next = t_flux[0].size();
+        subtr = 0;
+        for(unsigned int i = 1; i < phi1.flux.size(); i+=2) {
+            if(i >= next) {
+                thread++;
+                next += t_flux[thread].size();
+                subtr = i-1;
+            }
+            for(unsigned int n = 0; n < phi1.flux[0].size(); n++) {
+                for(unsigned int g = 0; g < 1; g++) {
+                    //cout << "thread: " << thread+1 << " mesh: " << i << " subtr: " << subtr << " thread_i: " << i-subtr << " next: " << next << endl;
+                    phi1.source[i][n][g] = t_source[thread][i-subtr][n][g];
+                }
+            }
+        }
+
+        //phi1.PrintFlux();
+
         // Sweep using new source
         phi1.SweepLR(params);
         phi1.SweepRL(params);
+
+        total.AddFlux(phi1.flux);
+
+        //total.PrintFlux();
 
         // Check convergence
         if(phi1.ConvCheck(total.flux, params.conv_tol)) {
@@ -315,24 +335,12 @@ int main(int argc, char* argv[]) {
     cout << "Generating output file " << params.output_name << endl;
     OutputGen(total, params);
 
-/**
-
-    boost::thread_group threads;
-
-    threads.create_thread(boost::bind(&WorkerFunction, data1));
-    threads.create_thread(boost::bind(&WorkerFunction, data2));
-    threads.create_thread(boost::bind(&WorkerFunction, data3));
-    threads.create_thread(boost::bind(&WorkerFunction, data4));
-    threads.create_thread(boost::bind(&WorkerFunction, data5));
-
-    threads.join_all();
-**/
     return 0;
 }
 
 // Updates source and total using flux
 void ThreadFunc(vector< vector < vector<float> > > &flux, vector< vector < vector<float> > > &source,
-                ParamsHolder params, vector< vector < vector<float> > > &total, vector<unsigned int> itoreg) {
+                ParamsHolder params, vector<unsigned int> &itoreg) {
     // ! Assumes the first mesh point is a half-integer point
 
     const unsigned int I = flux.size();
