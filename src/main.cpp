@@ -20,14 +20,9 @@ isos:   isotope database vector
 
 ***/
 
-void WorkerFunction(std::vector<float> &data) {
-    std::cout << "Starting thread" << std::endl;
-    for(int i = 1; i < data.size()-1; i+=2) {
-        data[i] = 1.001 * data[i-1];
-        data[i+1] = data[i]*0.5 + data[i-1]*0.5;
-    }
-    std::cout << "Completed thread" << std::endl;
-}
+
+void ThreadFunc(vector< vector < vector<float> > > &flux, vector< vector < vector<float> > > &source,
+                ParamsHolder params, vector< vector < vector<float> > > &total, vector<unsigned int> itoreg);
 
 void OutputGen(Phi &phi, ParamsHolder &params) {
     ifstream infile(params.output_name);
@@ -182,6 +177,14 @@ int main(int argc, char* argv[]) {
                 params.s_order = stoi(argv[++arg]);
             }
 
+            if(string(argv[arg]) == "threads" || string(argv[arg]) == "t") {
+                if(stoi(argv[1+arg]) > 100) {
+                    cout << "Error! Max 100 threads supported!" << endl;
+                    return 1;
+                }
+                params.threads = stoi(argv[++arg]);
+            }
+
         }
         cout << "Data for case: " << endl;
         params.Print();
@@ -217,27 +220,75 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-    cout << "tot source: " << params.tot_source << endl;
+    cout << ".Total source strength: " << params.tot_source << endl;
 
     // First sweep using given source
     phi1.SweepLR(params);
     phi1.SweepRL(params);
 
-    total.AddFlux(phi1.flux);
+    //total.AddFlux(phi1.flux);
 
     unsigned int counter;
     cout << "Starting solution..." << endl;
+    cout << "..Software threads: " << params.threads << endl;
+
+    // Generate thread flux vectors
+    vector< vector< vector < vector<float> > > > t_flux, t_source, t_total; // [thread][mesh][ordinate][energy]
+    vector < vector<unsigned int> > t_itoreg;
+
+    int mesh_size = floor(phi1.flux.size()/params.threads);
+
+    for(int thread = 0; thread < params.threads - 1; thread++) {
+        vector< vector < vector<float> > >::iterator it1 = phi1.flux.begin() + mesh_size*thread;
+        vector< vector < vector<float> > >::iterator it2 = phi1.flux.begin() + mesh_size*(thread+1);
+        vector< vector < vector<float> > > temp_flux(it1, it2);
+        t_flux.push_back(temp_flux);
+        t_source.push_back(temp_flux);
+        t_total.push_back(temp_flux);
+
+        vector < vector<unsigned int> >::iterator it3 = phi1.itoreg.begin() + mesh_size*thread;
+        vector < vector<unsigned int> >::iterator it3 = phi1.itoreg.begin() + mesh_size*(thread+1);
+        vector<unsigned int> temp_itoreg(it3, it4);
+        t_itoreg.push_back(temp_itoreg);
+    }
+    vector< vector < vector<float> > >::iterator it1 = phi1.flux.begin() + mesh_size*(params.threads-1);
+    vector< vector < vector<float> > >::iterator it2 = phi1.flux.end();
+    vector< vector < vector<float> > > temp_flux(it1, it2);
+    t_flux.push_back(temp_flux);
+    t_source.push_back(temp_flux);
+    t_total.push_back(temp_flux);
+
+    vector < vector<unsigned int> >::iterator it3 = phi1.itoreg.begin() + mesh_size*(params.threads-1);
+    vector < vector<unsigned int> >::iterator it3 = phi1.itoreg.end();
+    vector<unsigned int> temp_itoreg(it3, it4);
+    t_itoreg.push_back(temp_itoreg);
+
+
+    // Start iteration
     for(counter = 0; counter < 200; counter++) {
         // Progress output
         cout << "Iteration: " << counter << "\r";
         cout.flush();
 
+        // Run in parallel
+        boost::thread_group threads;
+        for(int thread = 0; thread < params.threads; thread++) {
+            threads.create_thread(boost::bind(&ThreadFunc, boost::ref(t_flux[thread]), boost::ref(t_source[thread]),
+                                          params, boost::ref(t_total[thread]), boost::ref(t_itoreg[thread])));
+        }
+
+            // Add to total
+
+            // Calculate source
+
+            // Collapse
+
+        // Check conv
+        // Sweep
+
         // Calculate new source
         phi1.CalcSource(params);
 
-        // Sweep
-        phi1.SweepLR(params);
-        phi1.SweepRL(params);
         // Check convergence
         if(phi1.ConvCheck(total.flux, params.conv_tol)) {
             cout << endl << "Calculation complete after " << counter << " iterations!" << endl;
@@ -246,17 +297,16 @@ int main(int argc, char* argv[]) {
         }
         // Add to total
         total.AddFlux(phi1.flux);
+
+        // Sweep
+        phi1.SweepLR(params);
+        phi1.SweepRL(params);
     }
 
     cout << "Generating output file " << params.output_name << endl;
     OutputGen(total, params);
 
 /**
-    std::vector<float> data1 (10000000, 3.141592);
-    std::vector<float> data2 (10000000, 3.141592);
-    std::vector<float> data3 (10000000, 3.141592);
-    std::vector<float> data4 (10000000, 3.141592);
-    std::vector<float> data5 (10000000, 3.141592);
 
     boost::thread_group threads;
 
@@ -270,6 +320,66 @@ int main(int argc, char* argv[]) {
 **/
     return 0;
 }
+
+
+void ThreadFunc(vector< vector < vector<float> > > &flux, vector< vector < vector<float> > > &source,
+                ParamsHolder params, vector< vector < vector<float> > > &total, vector<unsigned int> itoreg) {
+    // ! Assumes the first mesh point is a half-integer point
+
+    const unsigned int I = flux.size();
+    const unsigned int N = flux[0].size();
+    const unsigned int G = flux[0][0].size();
+
+    // Add to total
+    for(int i = 0; i < I; i++) {
+        for(int n = 0; n < N; n++) {
+            for(int g = 0; g < G; g++) {
+                total[i][n][g] += flux[i][n][g];
+            }
+        }
+    }
+
+    // Calculate source
+    float inner = 0;
+    float middle = 0;
+    float outer = 0;
+
+    for(unsigned int n = 0; n < N; n++) {
+        for(unsigned int g = 0; g < G; g++) {
+            for(unsigned int i = 1; i < I; i+=2) {
+
+                for(unsigned int l = 0; l < params.s_order; l++) {
+                // For legengre order l
+
+                    for(unsigned int k = 0; k < G; k++) {
+                    // For flux group k
+
+                        for(unsigned int p = 0; p < N; p++) {
+                        // For flux ordinate p
+                            inner += params.we[p] * params.leg[p][l] * flux[i][p][k];
+                        }
+
+                        middle += inner * params.region[itoreg[i]].skernel[l](k,g);
+                        inner = 0;
+                    }
+
+                    outer += middle * (2.*l + 1) * params.leg[n][l];
+                    middle = 0;
+                }
+
+                source[i][n][g] = 0.5 * outer;
+                outer = 0;
+            }
+        }
+    }
+
+    return;
+}
+
+
+
+
+
 
 
 

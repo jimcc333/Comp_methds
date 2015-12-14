@@ -6,7 +6,7 @@ b10.xs
 ordinates 8
 source 1e10
 output symmetric1
-tolerance 0.001
+tolerance 0.05
 
 Region
 h1 3.35e22

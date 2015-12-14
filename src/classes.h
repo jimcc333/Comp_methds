@@ -46,6 +46,7 @@ public:
     unsigned int f_order = 6;
     unsigned int s_order = 9;
     unsigned int ordinates = 8;
+    unsigned int threads = 2;
     string data_path = "./Data/";
     string input_path = "./Input/input.txt";
     string output_name = "output.txt";
@@ -106,6 +107,7 @@ public:
     void CalcSource(ParamsHolder &params);
     void AddFlux(vector< vector < vector<float> > > &addedflux);
     bool ConvCheck(vector< vector < vector<float> > > &total, float tolerance);
+    void UpdateFromThreads(vector< vector< vector < vector<float> > > > t_flux);
 };
 
 
