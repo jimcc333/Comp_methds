@@ -20,7 +20,8 @@ isos:   isotope database vector
 
 ***/
 
-
+void SingleThreadIter(Phi &phi1, Phi &total, ParamsHolder &params);
+void ThreadedIter(Phi &phi1, Phi &total, ParamsHolder &params);
 void ThreadFunc(vector< vector < vector<float> > > &flux, vector< vector < vector<float> > > &source,
                 ParamsHolder params, vector<unsigned int> &itoreg);
 
@@ -240,11 +241,52 @@ int main(int argc, char* argv[]) {
 
     total.AddFlux(phi1.flux);
 
-    unsigned int counter;
     cout << "Starting solution..." << endl;
     cout << "..Software threads: " << params.threads << endl;
     cout << "..Mesh points: " << phi1.flux.size() << endl;
 
+    if(params.threads == 1) {
+        SingleThreadIter(phi1, total, params);
+    } else {
+        ThreadedIter(phi1, total, params);
+    }
+
+    cout << "Generating output file " << params.output_name << endl;
+    OutputGen(total, params);
+
+    return 0;
+}
+
+void SingleThreadIter(Phi &phi1, Phi &total, ParamsHolder &params) {
+    unsigned int counter;
+
+    // Start iteration
+    for(counter = 0; counter < 200; counter++) {
+        // Progress output
+        cout << "Iteration: " << counter << "\r";
+        cout.flush();
+
+        // Calculate source
+        phi1.CalcSource(params);
+
+        // Sweep using new source
+        phi1.SweepLR(params);
+        phi1.SweepRL(params);
+
+        // Add to total
+        total.AddFlux(phi1.flux);
+
+        // Check convergence
+        if(phi1.ConvCheck(total.flux, params.conv_tol)) {
+            cout << endl << "Calculation complete after " << counter << " iterations!" << endl;
+            params.tot_iter = counter;
+            counter = 500;
+        }
+    }
+    return;
+}
+
+void ThreadedIter(Phi &phi1, Phi &total, ParamsHolder &params) {
     // Generate thread flux vectors
     vector< vector< vector < vector<float> > > > t_flux, t_source; // [thread][mesh][ordinate][energy]
     vector < vector<unsigned int> > t_itoreg;
@@ -274,6 +316,8 @@ int main(int argc, char* argv[]) {
     vector<unsigned int>::iterator it4 = phi1.itoreg.end();
     vector<unsigned int> temp_itoreg(it3, it4);
     t_itoreg.push_back(temp_itoreg);
+
+    unsigned int counter;
 
     // Start iteration
     for(counter = 0; counter < 200; counter++) {
@@ -345,11 +389,7 @@ int main(int argc, char* argv[]) {
             counter = 500;
         }
     }
-
-    cout << "Generating output file " << params.output_name << endl;
-    OutputGen(total, params);
-
-    return 0;
+    return;
 }
 
 // Updates source and total using flux
