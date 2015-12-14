@@ -137,6 +137,8 @@ int main(int argc, char* argv[]) {
     // Defaults
     ParamsHolder params;
 
+    unsigned int threads = 1;
+
     // Handle console inputs
     if(argc == 1) {
         cout << "No inputs. Assuming:" << endl;
@@ -180,6 +182,15 @@ int main(int argc, char* argv[]) {
                 params.s_order = stoi(argv[++arg]);
             }
 
+            if(string(argv[arg]) == "t") {
+                if(stoi(argv[1+arg]) > 2) {
+                    cout << "----Warning! Max 2 threads supported!" << endl;
+                    threads = 2;
+                    return 1;
+                }
+                threads = stoi(argv[++arg]);
+            }
+
         }
         cout << "Data for case: " << endl;
         params.Print();
@@ -206,8 +217,6 @@ int main(int argc, char* argv[]) {
     Phi phi1(params);
     Phi total(params);
 
-cout << "size: " << phi1.flux[0][0].size() << endl;
-
     // Determine total source
     params.tot_source = 0;
     for(int i = 0; i < phi1.source.size(); i++) {
@@ -218,7 +227,7 @@ cout << "size: " << phi1.flux[0][0].size() << endl;
             }
         }
     }
-    cout << " Total source: " << params.tot_source << endl;
+    cout << "..Total source: " << params.tot_source << endl;
 
     // First sweep using given source
     phi1.SweepLR(params);
@@ -236,38 +245,18 @@ cout << "size: " << phi1.flux[0][0].size() << endl;
         // Calculate new source
         phi1.CalcSource(params);
 
-        // Sweep
-        //phi1.SweepLR(params);
-        //phi1.SweepRL(params);
+        if(threads == 1) {
+            // Sweep
+            phi1.SweepLR(params);
+            phi1.SweepRL(params);
+        } else {
+            boost::thread_group threads;
 
-        boost::thread_group threads;
-
-        threads.create_thread(boost::bind(&Phi::SweepLR, boost::ref(phi1), params));
-        threads.create_thread(boost::bind(&Phi::SweepRL, boost::ref(phi1), params));
-        threads.join_all();
-
-/*
-        boost::thread_group threads;
-
-        for(unsigned int g = 0; g < params.egroups; g++) {
-            // For energy group g
-
-            for(unsigned int n = 0; n < params.ordinates/2; n++) {
-            // For RL ordinate n
-                //LRSweeper(phi1.flux[g][n], phi1.source[g][n], params, phi1.itoreg, n, g);
-                threads.add_thread(new boost::thread(&LRSweeper, boost::ref(phi1.flux[g][n]), boost::ref(phi1.source[g][n]),
-                                                  params, phi1.itoreg, n, g));
-            }
-            for(unsigned int n = params.ordinates/2; n < params.ordinates; n++) {
-            // For LR ordinate n
-                //RLSweeper(phi1.flux[g][n], phi1.source[g][n], params, phi1.itoreg, n, g);
-                threads.add_thread(new boost::thread(&RLSweeper, boost::ref(phi1.flux[g][n]), boost::ref(phi1.source[g][n]),
-                                                  params, phi1.itoreg, n, g));
-            }
+            threads.create_thread(boost::bind(&Phi::SweepLR, boost::ref(phi1), params));
+            threads.create_thread(boost::bind(&Phi::SweepRL, boost::ref(phi1), params));
+            threads.join_all();
         }
 
-        threads.join_all();
-*/
         // Check convergence
         if(phi1.ConvCheck(total.flux, params.conv_tol)) {
             cout << endl << "Calculation complete after " << counter << " iterations!" << endl;
