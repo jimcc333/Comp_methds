@@ -370,17 +370,11 @@ void ThreadedIter(Phi &phi1, Phi &total, ParamsHolder &params) {
             }
         }
 
-        //phi1.CalcSource(params);
-        //phi1.PrintSource();
-        //phi1.PrintFlux();
-
         // Sweep using new source
         phi1.SweepLR(params);
         phi1.SweepRL(params);
 
         total.AddFlux(phi1.flux);
-
-        //total.PrintFlux();
 
         // Check convergence
         if(phi1.ConvCheck(total.flux, params.conv_tol)) {
