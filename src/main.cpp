@@ -280,8 +280,8 @@ int main(int argc, char* argv[]) {
                 subtr = i-1;
             }
             for(unsigned int n = 0; n < phi1.flux[0].size(); n++) {
-                for(unsigned int g = 0; g < 1; g++) {
-                    //cout << "thread: " << thread+1 << " mesh: " << i << " subtr: " << subtr << " thread_i: " << i-subtr << " next: " << next << endl;
+                for(unsigned int g = 0; g < phi1.flux[0][n].size(); g++) {
+                    //cout << "thread: " << thread+1 << " mesh: " << i << " subtr: " << subtr << " thread_i: "<< i-subtr << " next: " << next << " region: " << t_itoreg[thread][i-subtr] <<  endl;
                     t_flux[thread][i-subtr][n][g] = phi1.flux[i][n][g];
                 }
             }
@@ -307,13 +307,15 @@ int main(int argc, char* argv[]) {
                 subtr = i-1;
             }
             for(unsigned int n = 0; n < phi1.flux[0].size(); n++) {
-                for(unsigned int g = 0; g < 1; g++) {
+                for(unsigned int g = 0; g < phi1.flux[0][n].size(); g++) {
                     //cout << "thread: " << thread+1 << " mesh: " << i << " subtr: " << subtr << " thread_i: " << i-subtr << " next: " << next << endl;
                     phi1.source[i][n][g] = t_source[thread][i-subtr][n][g];
                 }
             }
         }
 
+        //phi1.CalcSource(params);
+        //phi1.PrintSource();
         //phi1.PrintFlux();
 
         // Sweep using new source
@@ -366,15 +368,12 @@ void ThreadFunc(vector< vector < vector<float> > > &flux, vector< vector < vecto
                         // For flux ordinate p
                             inner += params.we[p] * params.leg[p][l] * flux[i][p][k];
                         }
-
                         middle += inner * params.region[itoreg[i]].skernel[l](k,g);
                         inner = 0;
                     }
-
                     outer += middle * (2.*l + 1) * params.leg[n][l];
                     middle = 0;
                 }
-
                 source[i][n][g] = 0.5 * outer;
                 outer = 0;
             }

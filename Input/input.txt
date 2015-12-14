@@ -3,9 +3,9 @@ h1.xs
 o16.xs
 b10.xs
 
-ordinates 2
+ordinates 8
 source 1e10
-output symmetric1
+output default_input_out
 tolerance 0.01
 
 Region
