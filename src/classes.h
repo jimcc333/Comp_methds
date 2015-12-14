@@ -46,7 +46,7 @@ public:
     unsigned int f_order = 6;
     unsigned int s_order = 9;
     unsigned int ordinates = 8;
-    unsigned int threads = 2;
+    unsigned int threads = 1;
     string data_path = "./Data/";
     string input_path = "./Input/input.txt";
     string output_name = "output.txt";

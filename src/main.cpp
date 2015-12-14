@@ -130,7 +130,7 @@ void OutputGen(Phi &phi, ParamsHolder &params) {
 }
 
 int main(int argc, char* argv[]) {
-    cout << "___Cem's Super-Awesome Transport Code___" << endl << endl;
+    cout << endl << "___Cem's Super-Awesome Transport Code___" << endl << endl;
     cout << "     .---------------------------." << endl;
     cout << "    /,--..---..---..---..---..--. `." << endl;
     cout << "   //___||___||___||___||___||___\\_|" << endl;
