@@ -231,12 +231,14 @@ int main(int argc, char* argv[]) {
     unsigned int counter;
     cout << "Starting solution..." << endl;
     cout << "..Software threads: " << params.threads << endl;
+    cout << "..Mesh points: " << phi1.flux.size() << endl;
 
     // Generate thread flux vectors
     vector< vector< vector < vector<float> > > > t_flux, t_source, t_total; // [thread][mesh][ordinate][energy]
     vector < vector<unsigned int> > t_itoreg;
 
     int mesh_size = floor(phi1.flux.size()/params.threads);
+    if(mesh_size/2 != 0) {mesh_size--;}
 
     for(int thread = 0; thread < params.threads - 1; thread++) {
         vector< vector < vector<float> > >::iterator it1 = phi1.flux.begin() + mesh_size*thread;
@@ -246,8 +248,8 @@ int main(int argc, char* argv[]) {
         t_source.push_back(temp_flux);
         t_total.push_back(temp_flux);
 
-        vector < vector<unsigned int> >::iterator it3 = phi1.itoreg.begin() + mesh_size*thread;
-        vector < vector<unsigned int> >::iterator it3 = phi1.itoreg.begin() + mesh_size*(thread+1);
+        vector<unsigned int>::iterator it3 = phi1.itoreg.begin() + mesh_size*thread;
+        vector<unsigned int>::iterator it4 = phi1.itoreg.begin() + mesh_size*(thread+1);
         vector<unsigned int> temp_itoreg(it3, it4);
         t_itoreg.push_back(temp_itoreg);
     }
@@ -258,11 +260,12 @@ int main(int argc, char* argv[]) {
     t_source.push_back(temp_flux);
     t_total.push_back(temp_flux);
 
-    vector < vector<unsigned int> >::iterator it3 = phi1.itoreg.begin() + mesh_size*(params.threads-1);
-    vector < vector<unsigned int> >::iterator it3 = phi1.itoreg.end();
+    vector<unsigned int>::iterator it3 = phi1.itoreg.begin() + mesh_size*(params.threads-1);
+    vector<unsigned int>::iterator it4 = phi1.itoreg.end();
     vector<unsigned int> temp_itoreg(it3, it4);
     t_itoreg.push_back(temp_itoreg);
 
+    cout << "t size: " << t_flux[0].size() << endl;
 
     // Start iteration
     for(counter = 0; counter < 200; counter++) {
@@ -270,24 +273,36 @@ int main(int argc, char* argv[]) {
         cout << "Iteration: " << counter << "\r";
         cout.flush();
 
+
         // Run in parallel
         boost::thread_group threads;
         for(int thread = 0; thread < params.threads; thread++) {
             threads.create_thread(boost::bind(&ThreadFunc, boost::ref(t_flux[thread]), boost::ref(t_source[thread]),
                                           params, boost::ref(t_total[thread]), boost::ref(t_itoreg[thread])));
+        }// calculated source and total threads
+
+        // Update from threads
+        unsigned int thread = 0;
+        unsigned int next = t_flux[0].size();
+        unsigned int subtr = 0;
+        for(unsigned int i = 1; i < phi1.flux.size(); i+=2) {
+            if(i >= next) {
+                thread++;
+                next += t_flux[thread].size();
+                subtr = i-1;
+            }
+            for(unsigned int n = 0; n < phi1.flux[0].size(); n++) {
+                for(unsigned int g = 0; g < 1; g++) {
+                    cout << "thread: " << thread+1 << " mesh: " << i << " subtr: " << subtr << " thread_i: " << i-subtr << " next: " << next << endl;
+                    phi1.source[i][n][g] = t_source[thread][i-subtr][n][g];
+                    total.flux[i][n][g] += t_flux[thread][i-subtr][n][g];
+                }
+            }
         }
 
-            // Add to total
-
-            // Calculate source
-
-            // Collapse
-
-        // Check conv
-        // Sweep
-
-        // Calculate new source
-        phi1.CalcSource(params);
+        // Sweep using new source
+        phi1.SweepLR(params);
+        phi1.SweepRL(params);
 
         // Check convergence
         if(phi1.ConvCheck(total.flux, params.conv_tol)) {
@@ -295,12 +310,6 @@ int main(int argc, char* argv[]) {
             params.tot_iter = counter;
             counter = 500;
         }
-        // Add to total
-        total.AddFlux(phi1.flux);
-
-        // Sweep
-        phi1.SweepLR(params);
-        phi1.SweepRL(params);
     }
 
     cout << "Generating output file " << params.output_name << endl;
@@ -321,7 +330,7 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-
+// Updates source and total using flux
 void ThreadFunc(vector< vector < vector<float> > > &flux, vector< vector < vector<float> > > &source,
                 ParamsHolder params, vector< vector < vector<float> > > &total, vector<unsigned int> itoreg) {
     // ! Assumes the first mesh point is a half-integer point
@@ -329,15 +338,6 @@ void ThreadFunc(vector< vector < vector<float> > > &flux, vector< vector < vecto
     const unsigned int I = flux.size();
     const unsigned int N = flux[0].size();
     const unsigned int G = flux[0][0].size();
-
-    // Add to total
-    for(int i = 0; i < I; i++) {
-        for(int n = 0; n < N; n++) {
-            for(int g = 0; g < G; g++) {
-                total[i][n][g] += flux[i][n][g];
-            }
-        }
-    }
 
     // Calculate source
     float inner = 0;
